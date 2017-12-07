@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.statistics.StudentSatiticsDao">
+	<select id="findPageCount" parameterType="pageBean" resultType="int">
+	  	SELECT 
+			COUNT(1) 
+		FROM student_course_rls a
+		LEFT JOIN study_course_info b ON a.id=b.id
+		LEFT JOIN student_info c ON a.student_id = c.student_id
+		LEFT JOIN class_info cf ON c.classId= cf.class_id
+	    LEFT JOIN grade_info g ON cf.grade_id=g.grade_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			a.open_id = #{params.studentCourse.openId} and a.state !=0
+			<if test="params.studentCourse.studentNumber != null and params.studentCourse.studentNumber !=''">
+				and c.number = #{params.studentCourse.studentNumber}
+			</if>
+			<if test="params.studentCourse.studentName != null and params.studentCourse.studentName !=''">
+				and c.name like CONCAT('%',#{params.studentCourse.studentName},'%')
+			</if>
+			<if test="params.studentCourse.classId != null and params.studentCourse.classId !=''">
+				and cf.class_id=#{params.studentCourse.classId}
+			</if>
+			<if test="params.studentCourse.gradeId != null and params.studentCourse.gradeId !=''">
+				and g.grade_id= #{params.studentCourse.gradeId}
+			</if>
+			<if test="params.studentCourse.MinmyexameGrade != null and params.studentCourse.MinmyexameGrade != ''">
+				and b.examineGrade &gt;= #{params.studentCourse.MinmyexameGrade}
+			</if>
+			<if test="params.studentCourse.MaxmyexameGrade !=null and params.studentCourse.MaxmyexameGrade !=''">
+				and b.examineGrade &lt;= #{params.studentCourse.MaxmyexameGrade}
+			</if>
+			<if test="params.studentCourse.MinvideoCount !=null and params.studentCourse.MinvideoCount !=''">
+				and b.videoCount &gt;= #{params.studentCourse.MinvideoCount}
+			</if>
+			<if test="params.studentCourse.MaxvideoCount !=null and params.studentCourse.MaxvideoCount !=''">
+				and b.videoCount &lt;= #{params.studentCourse.MaxvideoCount} 
+			</if>
+		</trim> 
+  	</select>
+  	
+  	<select id="selectStudentOfCourseStatistics" parameterType="pageBean" resultType="com.yz.center.model.form.statitics.StudentCourseStatitics">
+	SELECT
+	b.open_id openId,
+	a.number studentNumber,
+	a.name studentName,
+	cf.name as className,
+	g.name as gradeName,
+	c.videoCount videoCount,
+	c.examineCount examineCount,
+	c.discussCount discussCount,
+	c.taskCount taskCount,
+	c.finalGrade myFinalGrade,
+	c.examineGrade myexameGrade,
+	d.discussCount oldDiscussCount,
+	d.videoCount oldVideoCount,
+	d.taskCount oldTaskCount,
+	d.examineCount oldExamineCount
+	FROM student_info a
+	LEFT JOIN student_course_rls b ON b.student_id = a.student_id
+	LEFT JOIN study_course_info c ON b.id = c.id
+	LEFT JOIN open_course_info d ON b.open_id = d.open_id
+	LEFT JOIN class_info cf ON a.classId= cf.class_id
+	LEFT JOIN grade_info g ON cf.grade_id=g.grade_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			b.open_id = #{params.studentCourse.openId} and b.state !=0
+			<if test="params.studentCourse.studentNumber != null and params.studentCourse.studentNumber !=''">
+				and a.number = #{params.studentCourse.studentNumber}
+			</if>
+			<if test="params.studentCourse.studentName != null and params.studentCourse.studentName !=''">
+				and a.name like CONCAT('%',#{params.studentCourse.studentName},'%')
+			</if>
+			<if test="params.studentCourse.classId != null and params.studentCourse.classId !=''">
+				and cf.class_id=#{params.studentCourse.classId}
+			</if>
+			<if test="params.studentCourse.gradeId != null and params.studentCourse.gradeId !=''">
+				and g.grade_id=#{params.studentCourse.gradeId}
+			</if>
+			<if test="params.studentCourse.MinmyexameGrade != null and params.studentCourse.MinmyexameGrade != ''">
+				and c.examineGrade &gt;= #{params.studentCourseVo2.MinmyexameGrade}
+			</if>
+			<if test="params.studentCourse.MaxmyexameGrade !=null and params.studentCourse.MaxmyexameGrade !=''">
+				and c.examineGrade &lt;= #{params.studentCourse.MaxmyexameGrade}
+			</if>
+			<if test="params.studentCourse.MinvideoCount !=null and params.studentCourse.MinvideoCount !=''">
+				and c.videoCount &gt;= #{params.studentCourse.MinvideoCount}
+			</if>
+			<if test="params.studentCourse.MaxvideoCount !=null and params.studentCourse.MaxvideoCount !=''">
+				and c.videoCount &lt;= #{params.studentCourse.MaxvideoCount} 
+			</if>
+		</trim> 
+		LIMIT #{startIndex},#{pageSize}
+  	</select>
+  	
+  	<!--查询课程下面视频的数量  -->
+	<select id="findVideoTotalCount" parameterType="int" resultType="int">
+	SELECT 
+		COUNT(1) 
+	FROM video_info a
+	LEFT JOIN open_course_info b ON a.course_id =b.course_id
+	WHERE 
+		b.open_id=#{openId} 
+	</select>
+	
+	<!--查询课程下各项考试的分数  -->
+	<select id="findExameTotalScore" parameterType="int" resultType="int">
+	SELECT 
+		totalScore 
+	FROM paper_info 
+	WHERE 
+		open_id=#{openId} and function_id !=1
+	</select>
+	
+	<select id="findPaperTotalScore" parameterType="int" resultType="int">
+	SELECT 
+		totalScore 
+	FROM paper_info 
+	WHERE 
+		open_id=#{openId} and function_id !=2
+	</select>
+</mapper>

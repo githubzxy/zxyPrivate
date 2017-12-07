@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.statistics.HomeWorkStatiticsDao">
+	<!-- 查询考试课程名 -->
+	<select id="getCourseName" resultType="openCoursePo">
+		SELECT distinct
+		ocf.open_id,ocf.courseName,ocf.examineStartDate,ocf.examineEndDate
+		FROM examine_task_paper_info etpf
+		LEFT JOIN open_course_info ocf ON ocf.open_id=etpf.openCourseId
+		WHERE etpf.useType IN (${useType},3) AND etpf.schoolId=#{schoolId}
+	</select>
+	
+
+	<select id="getHwInfo" parameterType="pageBean" resultType="openCoursePo">
+	SELECT 
+	ocf.open_id,ocf.courseName,ocf.examineStartDate,ocf.examineEndDate,vf.name videoName,etpf.title,etpf.id
+	FROM examine_task_paper_info etpf 
+	LEFT JOIN open_course_info ocf ON ocf.open_id=etpf.openCourseId
+	LEFT JOIN video_info vf ON vf.video_id=etpf.videoId
+	WHERE etpf.useType IN (${params.useType},3)  AND etpf.schoolId=#{schoolId}
+		<if test="openId != null and openId != ''">
+				 AND ocf.open_id=#{openId}
+	    </if>
+	    <if test="keyWords != null and keyWords != ''">
+				AND (
+				etpf.title LIKE CONCAT('%',#{keyWords},'%')
+				)
+			</if>
+		LIMIT #{startIndex},#{pageSize}  
+	</select>
+	
+	<select id="getMarkCount"  resultType="Integer">
+	SELECT COUNT(1) FROM
+	examine_task_paper_info etpf
+	LEFT JOIN student_paper_info spf ON spf.id=etpf.id
+	WHERE
+	etpf.useType IN (${useType},3) AND spf.isExam=#{isExam} AND
+	spf.isMarking=1 AND
+	spf.id=#{Id} AND spf.schoolId=#{schoolId}
+    </select>
+    
+    <select id="getSubmitCount"  resultType="Integer">
+    SELECT COUNT(1) FROM
+	examine_task_paper_info etpf
+	LEFT JOIN student_paper_info spf ON
+	spf.id=etpf.id
+	WHERE
+	etpf.useType IN (${useType},3) AND spf.isExam=#{isExam} AND
+	isSubmit=1 AND spf.id=#{Id}
+	AND spf.schoolId=#{schoolId}
+	</select>
+	<select id="getHwStatisticsCount" parameterType="pageBean" resultType="Integer">
+	SELECT COUNT(1)
+	FROM examine_task_paper_info etpf 
+	WHERE etpf.useType IN (${params.useType},3) AND etpf.schoolId=#{schoolId}
+	<if test="courseId != null and courseId != ''">
+				 AND etpf.openCourseId=#{openId}
+	    </if>
+	    <if test="keyWords != null and keyWords != ''">
+				AND (
+				etpf.title LIKE CONCAT('%',#{keyWords},'%')
+				)
+			</if>
+	</select>
+	
+	<select id="getTestORHomeworkStatisticsCheckCount" parameterType="pageBean" resultType="Integer">
+	SELECT COUNT(1)
+    FROM
+	examine_task_paper_info etpf  
+    LEFT JOIN  student_paper_info spf ON spf.id=etpf.id
+	LEFT JOIN student_info sf ON sf.student_id=spf.student_id
+	LEFT JOIN user_info uf ON uf.user_id=sf.user_id
+    LEFT JOIN class_info cf ON sf.classId= cf.class_id
+	LEFT JOIN grade_info g ON cf.grade_id=g.grade_id
+	WHERE etpf.useType IN (${params.useType},3) AND etpf.id=#{params.Id} AND etpf.schoolId=#{schoolId}  AND spf.isSubmit=1
+	<if test="params.name != null and params.name != ''">
+				AND (
+				uf.name LIKE CONCAT('%',#{params.name},'%')
+				)
+			</if>
+			<if test="params.number != null and params.number != ''">
+				AND (
+				sf.number LIKE CONCAT('%',#{params.number},'%')
+				)
+			</if>
+			<if test="params.classId != null and params.classId !=''">
+				and cf.class_id=#{params.classId}
+			</if>
+			<if test="params.gradeId != null and params.gradeId !=''">
+				and g.grade_id=#{params.gradeId}
+			</if>
+    </select>
+    
+	<!-- 查看学生考试信息 -->
+	<select id="testStatisticsCheck" parameterType="pageBean" resultType="testStatisticsCheckForm">
+	SELECT uf.name,g.name as gradeName,cf.name as className,uf.phone,sf.number,spf.submitDate,spf.score
+    FROM
+	examine_task_paper_info etpf  
+    LEFT JOIN  student_paper_info spf ON spf.id=etpf.id
+	LEFT JOIN student_info sf ON sf.student_id=spf.student_id
+	LEFT JOIN user_info uf ON uf.user_id=sf.user_id
+    LEFT JOIN class_info cf ON sf.classId= cf.class_id
+	LEFT JOIN grade_info g ON cf.grade_id=g.grade_id
+	WHERE etpf.useType IN (${params.useType},3) AND etpf.id=#{params.Id} AND etpf.schoolId=#{schoolId}  AND spf.isSubmit=1
+	<if test="params.name != null and params.name != ''">
+				AND (
+				uf.name LIKE CONCAT('%',#{params.name},'%')
+				)
+			</if>
+			<if test="params.number != null and params.number != ''">
+				AND (
+				sf.number LIKE CONCAT('%',#{params.number},'%')
+				)
+			</if>
+			<if test="params.classId != null and params.classId !=''">
+				and cf.class_id=#{params.classId}
+			</if>
+			<if test="params.gradeId != null and params.gradeId !=''">
+				and g.grade_id=#{params.gradeId}
+			</if>
+	LIMIT #{startIndex},#{pageSize}  
+    </select>
+</mapper>

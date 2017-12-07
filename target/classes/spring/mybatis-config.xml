@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+         "http://mybatis.org/dtd/mybatis-3-config.dtd"> 
+<configuration>
+
+	   <settings>
+        <!-- 全局映射器启用缓存 -->  
+        <setting name="cacheEnabled" value="false" />  
+        <!-- 查询时，关闭关联对象即时加载以提高性能 -->  
+        <setting name="lazyLoadingEnabled" value="true" />  
+        <!-- 设置关联对象加载的形态，此处为按需加载字段(加载字段由SQL指定)，不会加载关联表的所有字段，以提高性能 -->  
+        <setting name="aggressiveLazyLoading" value="false" />  
+        <!-- 对于未知的SQL查询，允许返回不同的结果集以达到通用的效果 -->  
+        <setting name="multipleResultSetsEnabled" value="true" />  
+        <!-- 允许使用列标签代替列名 -->  
+        <setting name="useColumnLabel" value="true" />  
+        <!-- 允许使用自定义的主键值(比如由程序生成的UUID 32位编码作为键值)，数据表的PK生成策略将被覆盖 -->  
+        <setting name="useGeneratedKeys" value="false" />  
+        <!-- 给予被嵌套的resultMap以字段-属性的映射支持 -->  
+        <!-- <setting name="autoMappingBehavior" value="FULL" /> -->  
+        <!-- 对于批量更新操作缓存SQL以提高性能  但是返回id有问题-->  
+        <setting name="defaultExecutorType" value="SIMPLE" />  
+        <!-- 数据库超过36000秒仍未响应则超时 -->  
+        <setting name="defaultStatementTimeout" value="36000" />  
+        <!--是否开启自动驼峰命名规则（camel case）映射，即从经典数据库列名 A_COLUMN 到经典 Java 属性名 aColumn 的类似映射。 -->  
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+	<typeAliases>
+		<typeAlias type="com.yz.center.model.po.school.SchoolPo" alias="schoolPo" />
+		<typeAlias type="com.yz.center.model.po.teacher.TeacherPo" alias="teacherPo" />
+		<typeAlias type="com.yz.center.model.po.user.LoginPo" alias="loginPo"/>
+		<typeAlias type="com.yz.center.model.po.user.UserPo" alias="userPo"/>
+	    <typeAlias type="com.yz.center.model.po.task.TaskPo" alias="taskPo"/> 
+		<typeAlias type="com.yz.center.model.po.log.LogPo" alias="logPo"/>
+		<typeAlias type="com.yz.center.model.vo.StudentForm" alias="StudentForm"/>
+		<typeAlias type="com.yz.center.model.po.resource.ResourcePo" alias="resourcePo"/>
+		<typeAlias type="com.yz.center.model.po.resource.ResourceTypePo" alias="resourceTypePo"/>		
+		<typeAlias type="com.yz.center.model.po.resource.FileType" alias="fileType"/>		
+		<typeAlias type="com.yz.center.model.po.course.CourseTypePo" alias="courseTypePo"/>
+		<typeAlias type="com.yz.center.model.po.test.TestPo" alias="testPo"/>
+		<typeAlias type="com.yz.center.model.po.course.CoursePo" alias="coursePo"/>
+		<typeAlias type="com.yz.center.model.po.course.OpenCoursePo" alias="openCoursePo"/>
+		<typeAlias type="com.yz.center.model.po.course.CourseChapterPo" alias="courseChapterPo"/>
+		<typeAlias type="com.yz.center.model.po.video.VideoPo" alias="videoPo"/>
+	    <typeAlias type="com.yz.center.model.po.paper.PaperPo" alias="paperPo"/>
+		<typeAlias type="com.yz.center.model.po.test.FunctionPo" alias="functionPo"/>
+		<typeAlias type="com.yz.center.model.vo.StudentForm" alias="StudentForm"/>		
+		<typeAlias type="com.yz.center.model.po.message.NoticePo" alias="noticePo"/>
+		<typeAlias type="com.yz.center.model.po.course.CourseTypePo" alias="courseTypePo"/>
+	    <typeAlias type="com.yz.center.model.form.CourseInfoForm" alias="courseInfoForm"/>
+		<typeAlias type="com.yz.center.model.po.course.LecturerPo" alias="lecturerPo"/>
+		<typeAlias type="com.yz.center.model.vo.frontPage.VideoPlayVo" alias="videoPlayVo"/>
+	    <typeAlias type="com.yz.center.model.po.comment.CommentPo" alias="commentPo"/>
+		<typeAlias type="com.yz.center.model.po.course.StudentCoursePo" alias="studentCoursePo"/>
+		<typeAlias type="com.yz.center.model.form.CourseInfoForm" alias="courseInfoForm"/>
+		<typeAlias type="com.yz.center.model.po.message.MessagePo" alias="messagePo"/>
+		<typeAlias type="com.yz.center.util.common.PageBean" alias="pageBean"/>
+		<typeAlias type="com.yz.center.model.form.HomeWorkForm" alias="homeWorkForm"/>
+		<typeAlias type="com.yz.center.model.form.FindHomeworkForm" alias="findHomeworkForm"/>
+		<typeAlias type="com.yz.center.model.form.StuTestForm" alias="stuTestForm"/>
+		<typeAlias type="com.yz.center.model.po.paper.SubjectPo" alias="subjectPo"/>
+		<typeAlias type="com.yz.center.model.po.paper.StudentSubjectPo" alias="studentSubjectPo"/>
+		<typeAlias type="com.yz.center.model.po.student.PlayRecordPo" alias="playRecordPo"/>
+		<typeAlias type="com.yz.center.model.po.paper.StudentPaperPo" alias="studentPaperPo"/>
+		<typeAlias type="com.yz.center.model.vo.statistics.StudentStatisticsVo" alias="studentStatisticsVo"/>
+		<typeAlias type="com.yz.center.model.vo.statistics.DiscussThemeVo" alias="discussThemeVo"/>
+		<typeAlias type="com.yz.center.model.vo.paper.PaperVo" alias="paperVo"/>
+		<typeAlias type="com.yz.center.model.form.TestStatisticsCheckForm" alias="testStatisticsCheckForm"/>
+		<typeAlias type="com.yz.center.model.form.TestInfoForm" alias="testInfoForm"/>
+		<typeAlias type="com.yz.center.model.po.role.RolePo" alias="rolePo"/>
+		<typeAlias type="com.yz.center.model.po.bannerPo.BannerPo" alias="bannerPo"/>
+		<typeAlias type="com.yz.center.model.po.role.BaseControllerPo" alias="baseControllerPo"/>
+		
+	</typeAliases>
+</configuration>

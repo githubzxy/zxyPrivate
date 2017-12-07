@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.course.CourseChapterDao">
+	<select id="findCourseChapterByCourseId" parameterType="int" resultType="courseChapterPo">
+		SELECT 
+			*
+		FROM 
+			course_chapter
+		 WHERE
+			course_id=#{courseId} and state=1
+	</select>
+	
+	<!-- 查询最大排序编号 -->
+	<select id="selectChapterMaxSort" parameterType="courseChapterPo" resultType="int">
+		SELECT 
+			COUNT(a.sort)+1 sort 
+		FROM 
+			course_chapter a 
+		WHERE 
+			a.course_id = #{courseId} AND a.state = 1 AND a.parent_id = #{parentId}
+	</select>
+	<!-- 插入章节 -->
+	<insert id="addChapter" parameterType="courseChapterPo" useGeneratedKeys="true" keyProperty="chapterId">
+		INSERT INTO 
+			course_chapter
+		(
+			course_id,
+			parent_id,
+			chapter_name,
+			sort,
+			create_dt,
+			state_dt)
+		VALUES (
+			#{courseId},
+			#{parentId},
+			#{chapterName},
+			#{sort},
+			#{createDt},
+			#{stateDt});
+	</insert>
+	
+	<!-- 查询章节节点 -->
+	<select id="getChapterList" parameterType="courseChapterPo" resultType="courseChapterPo">
+		SELECT 
+			a.chapter_id,
+			a.chapter_name
+		FROM 
+			course_chapter a 
+		WHERE 
+			a.parent_id = #{parentId} AND a.course_id = #{courseId} AND a.state = 1
+		ORDER BY a.sort 
+	</select>
+	<!-- 查询章节下视频 -->
+	<select id="getVideoByChapterId" parameterType="Integer" resultMap="videoMap">
+		SELECT 
+			* 
+		FROM 
+			video_info 
+		WHERE 
+			chapter_id = #{chapterId} and state=1
+	</select>
+	
+	<!-- 查询章节信息 -->
+	<select id="getChapterById" parameterType="Integer" resultMap="courseChapterMap">
+		SELECT 
+			*
+		FROM 
+			course_chapter 
+		WHERE 
+			chapter_id = #{chapterId} and state=1
+	</select>
+	<resultMap type="courseChapterPo" id="courseChapterMap">
+		<result column="chapter_id" jdbcType="INTEGER" property="chapterId" />
+		<result column="course_id" jdbcType="INTEGER" property="courseId" />
+		<result column="parent_id" jdbcType="INTEGER" property="parentId" />
+		<result column="chapter_name" jdbcType="VARCHAR" property="chapterName" />
+		<result column="sort" jdbcType="INTEGER" property="sort" />
+		<result column="level" jdbcType="INTEGER" property="level" />
+		<result column="create_dt" property="createDt" />
+		<result column="state_dt"  property="stateDt" />
+		<result column="state" jdbcType="INTEGER" property="state" />
+	</resultMap>
+	
+	<!-- 通过courseId和parentId查询章节list-->
+	<select id="getByCourseAndParent" parameterType="Integer" resultType="courseChapterPo">
+		SELECT 
+			*
+		FROM 
+			course_chapter 
+		WHERE 
+			course_id = #{courseId} and parent_id = #{parentId} and state=1  ORDER BY sort ASC
+	</select>
+	
+	<!-- 查询章节名 -->
+	<select id="getChapterNameById" parameterType="Integer" resultType="String">
+		SELECT 
+			chapter_name
+		FROM 
+			course_chapter 
+		WHERE 
+			chapter_id = #{chapterId} and state=1
+	</select>
+	
+	<!-- 更新章节节点 -->
+	<update id="updateChapter" parameterType="courseChapterPo">
+		UPDATE 
+			course_chapter
+		SET
+			chapter_name = #{chapterName},
+			state_dt = #{stateDt},
+			level=#{level}
+		WHERE
+			state = #{state} AND course_id = #{courseId} AND chapter_id = #{chapterId}
+	</update>
+	
+	<!-- 更新章节排序 -->
+	<update id="updateChapterSort" parameterType="courseChapterPo">
+		UPDATE 
+			course_chapter
+		SET
+			sort = #{sort},
+			level = #{level}
+		WHERE
+			chapter_id = #{chapterId}
+	</update>
+	
+	<!-- 更新章节父节点id -->
+	<update id="updatechapterParentId" parameterType="courseChapterPo">
+		UPDATE 
+			course_chapter
+		SET
+			parent_id = #{parentId}
+		WHERE
+			chapter_id = #{chapterId}
+	</update>
+	
+	<!-- 更新章节节点状态 -->
+	<update id="updateChapterState" parameterType="courseChapterPo">
+		UPDATE 
+			course_chapter
+		SET
+			state_dt = #{stateDt},
+			state = #{state}
+		WHERE
+			course_id = #{courseId} AND chapter_id = #{chapterId}
+	</update>
+	
+	<!-- 删除章节下视频 -->
+	<delete id="delVideo" parameterType="java.lang.Integer">
+		DELETE FROM video_info WHERE
+		video_id = #{videoId}
+	</delete>
+	<delete id="delVideoByChapterId" parameterType="java.lang.Integer">
+		DELETE FROM video_info  WHERE chapter_id=#{chapterId}
+	</delete>
+	<!-- 删除章节下文件 -->
+	<delete id="delFile" parameterType="java.lang.Integer">
+		DELETE FROM chapter_file WHERE
+		file_id = #{fileId}
+	</delete>
+	
+	<resultMap type="com.yz.center.model.po.video.VideoPo" id="videoMap">
+		<result column="video_id" jdbcType="INTEGER" property="videoId" />
+		<result column="course_id" jdbcType="INTEGER" property="courseId" />
+		<result column="chapter_id" jdbcType="INTEGER" property="chapterId" />
+		<result column="school_id" jdbcType="INTEGER" property="schoolId" />
+		<result column="user_id" jdbcType="INTEGER" property="userId" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="info" jdbcType="VARCHAR" property="info" />
+		<result column="video_suffix" jdbcType="VARCHAR" property="videoSuffix" />
+		<result column="second" jdbcType="INTEGER" property="second" />
+		<result column="url" jdbcType="VARCHAR" property="url" />
+		<result column="create_dt" jdbcType="TIMESTAMP" property="createDate" />
+		<result column="state_dt" jdbcType="TIMESTAMP" property="stateDate" />
+		<result column="state" jdbcType="INTEGER" property="state" />
+		<result column="isshow" jdbcType="INTEGER" property="isshow" />
+	</resultMap>
+	
+	<update id="updatechapterLevel" parameterType="Integer">
+		UPDATE 
+			course_chapter
+		SET
+			level = #{level}
+		WHERE
+			chapter_id = #{chapterId}
+	</update>
+	
+	<select id="getVideoInfoBychapterId" parameterType="int" resultType="int">
+		SELECT
+			video_id
+		FROM
+			video_info
+		WHERE
+			chapter_id = #{chapterId}
+	</select>
+</mapper>

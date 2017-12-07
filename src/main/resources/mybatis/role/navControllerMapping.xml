@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.role.NavControllerDao">
+	<select id="selectRoleCons" resultMap="roleConsMap">
+		SELECT 
+			a.id,
+			a.con_name conName,
+			a.url,
+			a.`level`,
+			a.parentId,
+			a.ico,
+			b.id id1,
+			b.con_name conName1,
+			b.url url1,
+			b.`level` level1,
+			b.parentId parentId1,
+			b.ico ico1
+		FROM
+			base_controller_info a
+		LEFT JOIN base_controller_info b ON a.id = b.parentId
+		RIGHT JOIN base_role_controller c ON b.id = c.controllerId AND c.roleId = #{roleId}
+		WHERE a.parentId = #{id}
+	</select>
+	<resultMap type="com.yz.center.model.vo.role.RoleControllerVo" id="roleConsMap">
+		<id column="id" property="id"/>
+		<result column="conName" property="conName"/>
+		<result column="url" property="url"/>
+		<result column="level" property="level"/>
+		<result column="parentId" property="parentId"/>
+		<result column="ico" property="ico"/>
+		<collection property="children" ofType="com.yz.center.model.vo.role.RoleControllerVo">
+			<id column="id1" property="id"/>
+			<result column="conName1" property="conName"/>
+			<result column="url1" property="url"/>
+			<result column="level1" property="level"/>
+			<result column="parentId1" property="parentId"/>
+			<result column="ico1" property="ico"/>
+		</collection>
+	</resultMap>
+	<select id="selectParentNav" resultType="com.yz.center.model.vo.role.RoleControllerVo">
+		SELECT 
+			a.id,
+			a.con_name conName,
+			a.url,
+			a.level,
+			a.parentId,
+			a.ico
+		FROM
+			base_controller_info a
+		WHERE a.parentId = 0
+	</select>
+</mapper>

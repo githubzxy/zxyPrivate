@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.user.LoginDao">
+	
+
+	<!-- 注册用户 -->
+	<insert id="add" parameterType="loginPo" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO 
+			login_info
+		(
+			school_id,
+			loginName,
+			loginPass,
+			role_id,
+			create_dt)
+		VALUES (
+			#{schoolId},
+			#{loginName},
+			#{password},
+			#{roleId},
+			#{createDate});
+	</insert>
+	
+	<!-- 用登陆名查询 -->
+	<select id="getByLoginName" parameterType="String" resultMap="loginMap">
+		SELECT 
+			a.login_id,
+			a.schoolId,
+			a.loginName,
+			a.loginPwd,
+			a.roleCode
+		FROM 
+			login_info a , user_info b
+		
+		WHERE 
+			 binary a.loginName = #{loginName} and b.number = #{loginName} and b.state = 1
+	</select>
+	
+	
+	<resultMap type="com.yz.center.model.po.user.LoginPo" id="loginMap">
+		<result column="login_id" jdbcType="INTEGER" property="loginId" />
+		<result column="schoolId" jdbcType="INTEGER" property="schoolId" />
+		<result column="loginName" jdbcType="VARCHAR" property="loginName" />
+		<result column="loginPwd" jdbcType="VARCHAR" property="loginPwd" />
+		<result column="roleCode" jdbcType="TIMESTAMP" property="roleCode" />
+	</resultMap>
+	<insert id="addToken" parameterType="com.yz.center.model.vo.TokenPo">
+		INSERT INTO
+			token_info
+			( 
+				token,
+				user_id
+
+			
+			)
+		VALUES( 
+				token = #{token},
+				user_id = #{userId}
+		
+		)
+	</insert>
+	<select id="getToken" parameterType="int" resultType="String">
+		SELECT 
+				token
+		FROM 
+			   token_info
+		WHERE
+			user_id = #{user_id}
+	</select>
+	<insert id="feedBack" parameterType="com.yz.center.model.po.user.FeedBackPo" >
+		INSERT INTO feedback_info (
+			type_id,
+			title,
+			content,
+			phone,
+			createDate
+		)
+		VALUES
+			(
+				#{typeId},
+				#{title},
+				#{content},
+				#{phone},
+				NOW()
+			)
+	</insert>	
+</mapper>

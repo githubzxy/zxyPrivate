@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.student.StudyDao">
+<select id="getPlayRecordByStudentId" parameterType="integer" resultType="playRecordPo">
+			select p.record_id,
+			p.`second`,
+			p.isover,
+			p.video_id 
+			from play_record p 
+			WHERE p.student_id =#{studentId}
+			and p.select_id=#{openId}
+	</select>
+	<insert id="addPlayRecord" parameterType="playRecordPo" useGeneratedKeys="true" keyProperty="recordId">
+	INSERT INTO
+		play_record(
+		video_id,
+		select_id,
+		student_id,
+		second,
+		isover,
+		startDate,
+		lastDate,
+		state
+		) VALUES (
+		#{videoId},
+		#{selectId},
+		#{studentId},
+		#{second},
+		#{isover},
+		#{startDate},
+		#{lastDate},
+		#{state}
+		)
+	</insert>
+	<update id="addClickNum" parameterType="Integer" >
+	UPDATE 
+	open_course_info o 
+	set o.clickNum=o.clickNum+1 
+	WHERE o.open_id=#{openId}
+	</update>
+	
+	
+   <select id="getvideoByPlayRecord" parameterType="Integer" resultType="videoPo">
+     SELECT v.video_id,
+     v.`name`,
+     v.url,
+     p.`second` second,
+     p.isover
+     from video_info v,
+     play_record p
+     WHERE v.video_id=p.video_id
+     and p.record_id=#{recordId} 
+   </select>
+   <select id="getvideosByOpenId" parameterType="Integer" resultType="videoPo">
+   SELECT v.video_id,
+   v.`name`,
+   v.url,
+   o.courseName
+   FROM video_info v,
+   open_course_info o
+   WHERE v.course_id=o.course_id 
+   and o.open_id=#{openId}
+   and v.video_id &gt;#{videoId}
+   ORDER BY v.video_id
+   </select>
+   <update id="updatePlayRecord" parameterType="playRecordPo">
+    UPDATE play_record p 
+    SET 
+        p.video_id=#{videoId},
+		p.second=#{second},
+		p.isover=#{isover},
+		<if test="sign==1">
+		p.startDate=#{startDate},
+		</if>
+		p.lastDate=#{lastDate} 
+    WHERE p.student_id=#{studentId} 
+    and p.select_id=#{selectId}
+   </update>
+   <select id="getStudentPaperInfo" parameterType="Integer" resultType="studentPaperPo">
+     SELECT p.student_paper_id studentPaperId,
+     p.paperId,
+     p.isSubmit
+     from student_paper_info p 
+     WHERE p.student_id=#{studentId}
+     and p.openCourseId=#{openId} 
+     and p.videoId=#{videoId}
+   </select>
+   <select id="getOpenCourseName" parameterType="Integer" resultType="com.yz.center.model.vo.frontPage.OpenCourseChapterNameVo">
+   SELECT c.type_name courseTypeName,
+   o.courseName  openCourseName
+   FROM open_course_info o,
+   course_type c,
+   course_info i
+   WHERE o.course_id=i.course_id 
+   and i.course_type_id=c.course_type_id 
+   and o.open_id=#{openId}
+   </select>
+   <select id="getUnlockVideoIds" parameterType="Integer" resultType="videoPo">
+   SELECT v.video_id,
+   v.`name` 
+   from video_info v,
+   open_course_info o 
+   WHERE o.course_id=v.course_id 
+   and o.open_id=#{openId} 
+   LIMIT 0,#{unlockNum}
+   </select>
+   <select id="getVideoByVideoId" parameterType="Integer" resultType="videoPo">
+     SELECT 
+     v.video_id,
+     v.url,
+     v.`name`
+     from video_info v
+     WHERE 
+     v.video_id=#{videoId} 
+     and v.state=1
+   </select>
+    <select id="getExamineTaskPaper"  parameterType="Integer" resultType="taskPo">
+     SELECT 
+     e.id,
+     e.paperIds,
+     e.videoId from examine_task_paper_info e 
+     WHERE
+     e .schoolId=#{schoolId} AND  
+     e.openCourseId=#{openId} 
+     and e.videoId=#{videoId}
+   </select>
+    <select id="getExamineTaskPaperOfTest"  parameterType="Integer" resultType="taskPo">
+     SELECT 
+     e.id,
+     e.paperIds,
+     e.videoId from examine_task_paper_info e 
+     WHERE
+     e .schoolId=#{schoolId} AND  
+     e.openCourseId=#{openId} 
+     and e.videoId IS NULL
+   </select>
+   <insert id="addStudentPaperInfo" parameterType="studentPaperPo" useGeneratedKeys="true" keyProperty="studentPaperId">
+	INSERT INTO
+		student_paper_info(
+		paperId,
+		id,
+		student_id,
+		schoolId,
+		openCourseId,
+		videoId,
+		isExam,
+		isSubmit,
+		isMarking,
+		createDate
+		) VALUES (
+		#{paperId},
+		#{id},
+		#{student_id},
+		#{schoolId},
+		#{openCourseId},
+		#{videoId},
+		#{isExam},
+		#{isSubmit},
+		#{isMarking},
+		#{createDate}
+		) 
+	</insert>
+	<select id="getStuPaperInfoById"  resultType="Integer">
+     SELECT COUNT(1) FROM student_paper_info spf WHERE spf.id=#{id}
+   </select>
+   <update id="updateViewVideoCount">
+   	UPDATE 
+		study_course_info a, student_course_rls b
+	SET a.videoCount = (SELECT COUNT(1) FROM video_info vf LEFT JOIN open_course_info ocf ON
+	ocf.course_id=vf.course_id WHERE ocf.open_id=#{openId} AND vf.video_id&lt;=(
+	SELECT p.video_id FROM play_record p WHERE p.select_id=#{openId} AND
+	p.student_id=#{studentId}) ),
+	a.videoGrade=(SELECT COUNT(1)*ocf.videoPercent/ocf.videoCount FROM video_info vf LEFT JOIN open_course_info ocf ON
+	ocf.course_id=vf.course_id WHERE ocf.open_id=#{openId} AND vf.video_id&lt;=(
+	SELECT p.video_id FROM play_record p WHERE p.select_id=#{openId} AND
+	p.student_id=#{studentId}))
+	WHERE a.studentCourseId = b.id AND b.student_id = #{studentId} AND b.open_id = #{openId}
+   </update>
+   </mapper>

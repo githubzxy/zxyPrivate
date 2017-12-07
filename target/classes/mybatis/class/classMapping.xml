@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.ClassDao">
+<select id="getGradeList" parameterType="Integer" resultMap="gradeList">
+    	SELECT g.grade_id,
+    	g.`name`,
+    	g.schoolId,
+    	g.createDate,
+    	g.stateDate,
+    	g.state from grade_info g
+    	where g.schoolId=#{schoolId}
+    </select>
+    <resultMap type="com.yz.center.model.po.GradePo" id="gradeList">
+    	<id column="grade_id" property="gradeId"/>
+    	<result column="name" property="name"/>
+    	<result column="createDate" property="creDt"></result>
+    	<result column="stateDate" property="staDt"></result>
+    	<result column="state" property="state"></result>
+    	<association property="schoolPo" javaType="com.yz.center.model.po.school.SchoolPo">
+    	    <id property="schoolId" column="school_id"/>
+    	</association>
+    </resultMap>
+    <insert id="addClass" parameterType="com.yz.center.model.vo.ClassForm">
+    INSERT INTO
+		class_info(
+		grade_id,
+		schoolId,
+		name,
+		createUserId,
+		createDate,
+		stateDate,
+		info
+		) VALUES (
+		#{gradeId},
+		#{schoolId},
+		#{name},
+		#{createUserId},
+		#{createDate},
+		#{stateDate},
+		#{info}
+		)
+    </insert>
+     <select id="selectClassList" parameterType="pageBean"  resultMap="classList">
+    	SELECT
+    	c.class_id, 
+    	c.name,
+    	c.info,
+    	c.createDate
+		FROM
+	    class_info c
+		LEFT JOIN school_info s ON s.school_id = c.schoolId 
+		where c.state=1 and s.school_id = #{schoolId}
+			<if test="keyWords != null and keyWords !=''">
+				AND c.name LIKE CONCAT('%',#{keyWords},'%')
+			</if>
+		limit #{startIndex},#{pageSize}
+    </select>
+    <resultMap type="com.yz.center.model.po.ClassPo" id="classList">
+    	<result column="class_id" property="classId"/>
+    	<result column="name" property="name"/>
+    	<result column="info" property="info"/>
+    	<result column="createDate" property="createDate"></result>
+    </resultMap>
+    
+    <select id="selectClassCount" parameterType="pageBean" resultType="int">
+    	SELECT 
+    		COUNT(1) 
+    	from 
+    		class_info c,school_info s 
+    	where c.schoolId = s.school_id AND c.state=1 and s.school_id = #{schoolId}
+		<if test="keyWords != null and keyWords !=''">
+			AND c.name LIKE CONCAT('%',#{keyWords},'%')
+		</if>
+    </select>
+    
+     <select id="selectClassById" parameterType="Integer"  resultType="com.yz.center.model.vo.ClassForm">
+    	SELECT 
+    c.grade_id as gradeId,
+    c.name,
+    c.info
+		FROM
+		class_info c where c.class_id=#{classId}
+    </select>
+    
+    <update id="updateClassInfo" parameterType="com.yz.center.model.vo.ClassForm">
+      UPDATE class_info c SET c.grade_id=#{gradeId},
+      c.name=#{name},
+      c.info=#{info}
+      where c.class_id=#{classId}
+    </update>
+     <select id="classByName" parameterType="com.yz.center.model.vo.ClassForm" resultType="com.yz.center.model.po.ClassPo">
+     select
+     	* 
+     from 
+     	class_info c 
+     where c.name=#{name} and c.schoolId=#{schoolId} and c.grade_id=#{gradeId}
+     </select>
+     <update id="del" parameterType="Integer" >
+      UPDATE class_info c SET c.state=-1 WHERE c.class_id=#{classId}
+    </update>
+    <select id="getGradeIdByGradeName" parameterType="String"  resultType="com.yz.center.model.po.GradePo">
+    select g.grade_id from grade_info g where g.name LIKE CONCAT('%',#{gradeName},'%')
+    </select>
+    
+    
+    <select id="findallClass" parameterType="int" resultMap="classList2">
+    	SELECT
+    	 	c.class_id classId,
+    	 	c.grade_id gradeId,
+    	 	c.name name,
+    	 	c.major major,
+    	 	g.name gradeName
+    	FROM
+    		class_info c
+    	LEFT JOIN   grade_info g ON g.grade_id = c.grade_id
+    	WHERE
+    		c.schoolId = #{schoolId}
+    </select>
+    
+    <resultMap type="com.yz.center.model.po.ClassPo" id="classList2">
+    	<id column="classId" property="classId"/>
+    	<result column="name" property="name"/>
+    	<result column="major" property="major"/>
+    	<association property="gradePo" javaType="com.yz.center.model.po.GradePo">
+    		<id column="gradeId" property="gradeId"/>
+    		<result column="gradeName" property="name"/>
+    	</association>
+    </resultMap>
+</mapper>

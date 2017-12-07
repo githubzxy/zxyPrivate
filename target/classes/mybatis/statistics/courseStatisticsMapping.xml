@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.statistics.CourseStatisticsDao">
+		<select id="selectPageCount" parameterType="pageBean" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			open_course_info  
+			
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			schoolId = #{schoolId} and state !=0
+			<if test="params.isEnd != null and params.isEnd !=''">
+				and state like CONCAT(CONCAT('%', #{params.isEnd}), '%')
+			</if>
+			<if test="params.courseName != null and params.courseName != ''">
+				and courseName like CONCAT(CONCAT('%', #{params.courseName}), '%')
+			</if>
+		</trim>
+	</select>
+	<select id="selectCourseStatistics"  parameterType="pageBean" resultType="com.yz.center.model.vo.course.OpenCourseVo2">
+		SELECT 
+				open_id,
+				courseName,
+				studyStartDate,
+				studyEndDate
+			FROM 
+			open_course_info 
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			schoolId = #{schoolId} and state !=0
+			<if test="params.isEnd != null and params.isEnd !=''">
+				and state like CONCAT(CONCAT('%', #{params.isEnd}), '%')
+			</if>
+			<if test="params.courseName != null and params.courseName !=''">
+				and courseName like CONCAT(CONCAT('%', #{params.courseName}), '%')
+			</if>
+		</trim>
+		limit #{startIndex},#{pageSize}
+	</select>
+	<select id="selectStudentCountByopenId" parameterType="int" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			student_course_rls
+		where 
+			open_id = #{openId}	and state !=0	
+	</select>
+	<select id="selectexamPeopleCount" parameterType="int" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			student_paper_info a 
+		where 
+			a.openCourseId = #{openId}  AND a.isExam=1		
+	</select>
+	<select id="selectvideoCount" parameterType="int" resultType="int">
+		SELECT a.videoCount 
+			FROM 
+			study_course_info a
+		LEFT JOIN student_course_rls b ON a.id = b.id
+		where 
+			b.open_id = #{openId}	
+	</select>
+	<select id="selectexamCount" parameterType="int" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			student_paper_info a 
+		where 
+			a.openCourseId = #{openId}  AND a.isExam=1 and a.isSubmit = 1
+	</select>
+	<select id="selecttaskCount" parameterType="int" resultType="int">
+		SELECT a.taskCount 
+			FROM 
+			study_course_info a
+		LEFT JOIN student_course_rls b ON a.id = b.id
+		where 
+			b.open_id = #{openId}
+	</select>
+	<select id="selectdiscussCount" parameterType="int" resultType="int">
+		SELECT a.discussCount 
+			FROM 
+			study_course_info a
+		LEFT JOIN student_course_rls b ON a.id = b.id
+		where 
+			b.open_id = #{openId}
+	</select>
+	<select id="selectpassPeople" parameterType="int" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			study_course_info a
+		LEFT JOIN student_course_rls b ON a.id = b.id
+		where 
+			b.open_id = #{openId} and a.finalGrade &gt;= 60	
+	</select>
+</mapper>

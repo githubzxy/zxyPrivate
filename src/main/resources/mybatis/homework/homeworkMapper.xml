@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.homeWork.HomeWorkDao">
+	
+	<select id="getHomework" parameterType="pageBean" resultType="homeWorkForm" >
+	SELECT
+	scr.open_id openCourseId,ocf.finishDate,ocf.courseName,group_concat(distinct
+	lfo.name) lecturerName,cof.maxUrl,ocf.taskCount,scf.taskCount
+	finishCount
+	FROM student_course_rls scr
+	LEFT JOIN open_course_info ocf ON
+	scr.open_id=ocf.open_id
+	LEFT JOIN course_lecturer_rls crl ON
+	crl.course_id=ocf.course_id
+	LEFT JOIN lecturer_info lfo ON
+	lfo.lecturer_id=crl.lecturer_id
+	LEFT JOIN course_info cf ON
+	cf.course_id=ocf.course_id
+	LEFT JOIN cover_info cof ON
+	cof.cover_id=cf.cover_id
+	LEFT JOIN study_course_info scf ON scf.studentCourseId=scr.id
+	LEFT JOIN examine_task_paper_info etpf ON etpf.openCourseId=scr.open_id
+	WHERE
+	ocf.state=1 AND scr.state=1 AND scf.state=1 AND
+	ocf.schoolId=#{schoolId} AND scr.student_id=#{params.studentId} AND
+	etpf.useType=1 GROUP BY scr.open_id
+	LIMIT #{startIndex},#{pageSize} 
+	</select>
+	<!-- <resultMap type="homeWorkForm" id="homeWorkForms">
+    	<result column="open_id" property="openCourseId"/>
+    	<result column="finishDate" property="finishDate"/>
+    	<result column="courseName" property="courseName"></result>
+        <result column="maxUrl" property="maxUrl"></result>
+    	<collection property="lecturerPos" ofType="com.yz.center.model.po.course.LecturerPo" column="open_id">  
+            <id column="lecturer_id" property="lecturerId"/>  
+           <result column="name" property="name"></result> 
+        </collection>
+    </resultMap> -->
+	<select id="getHomeworkCount" parameterType="pageBean" resultType="Integer" >
+	SELECT DISTINCT
+	COUNT(DISTINCT scr.open_id)
+	FROM student_course_rls scr
+    LEFT JOIN examine_task_paper_info etpf ON etpf.openCourseId=scr.open_id
+	WHERE
+    scr.state=1 AND scr.student_id=#{params.studentId} AND etpf.useType=1
+	</select>
+	
+	<select id="getCount" resultType="Integer">
+		SELECT
+			a.taskCount
+		FROM
+			study_course_info a
+		LEFT JOIN student_course_rls b ON a.studentCourseId = b.id
+		WHERE
+			b.student_id = #{studentId}
+		AND b.open_id = #{openCourseId}
+	</select>
+	
+	<!-- 取得总套数 -->
+	<select id="getTotalCount" parameterType="pageBean" resultType="Integer">
+	SELECT count(1) from student_course_rls scr
+    LEFT JOIN examine_task_paper_info etpf ON etpf.openCourseId=scr.open_id
+    WHERE scr.student_id=#{params.studentId} AND scr.state=1 AND etpf.useType=1
+    AND etpf.openCourseId=#{openId} 
+	</select>
+	<!-- 取得完成套数 -->
+	<select id="getfinishCount" parameterType="pageBean" resultType="Integer">
+	SELECT COUNT(1) FROM
+	student_paper_info spf
+	WHERE
+	spf.isExam=#{params.isExam} AND spf.isSubmit=1 AND spf.student_id=#{params.studentId} AND spf.openCourseId=#{openId}
+	</select>
+	<select id="findHomework" parameterType="pageBean" resultType="findHomeworkForm" >
+	<!-- SELECT
+	oci.courseName,oci.studyEndDate,pf.title,sfo.student_paper_id,sfo.paperId,sfo.isSubmit,sfo.student_paper_id
+	FROM student_paper_info sfo
+	LEFT JOIN open_course_info oci ON
+	oci.open_id=sfo.openCourseId
+	LEFT JOIN paper_info pf ON
+	pf.paper_id=sfo.paperId
+	WHERE  sfo.isExam=0 AND sfo.openCourseId=#{openCourseId} -->
+	SELECT
+	c.courseName,
+	c.studyEndDate,
+	a.title,
+	a.id,
+	a.openCourseId
+	FROM
+		examine_task_paper_info a
+	LEFT JOIN open_course_info c ON a.openCourseId = c.open_id
+	WHERE
+		a.openCourseId =#{openId}
+	AND a.useType = 1 AND a.schoolId= #{schoolId} 
+	LIMIT #{startIndex},#{pageSize}  
+	</select>
+	<select id="isSumit" parameterType="pageBean" resultType="findHomeworkForm">
+		SELECT
+			a.isSubmit,
+			a.paperId,
+			a.student_paper_id studentPaperId
+		FROM
+			student_paper_info a
+		WHERE
+			a.student_id =#{studentId} AND a.isExam=0 AND a.id=#{Id} 
+	
+	</select>
+	<select id="getCountByopenCourseId" parameterType="pageBean" resultType="Integer" >
+	<!-- SELECT COUNT(1)
+	FROM student_paper_info sfo
+	LEFT JOIN open_course_info oci ON
+	oci.open_id=sfo.openCourseId
+	LEFT JOIN paper_info pf ON
+	pf.paper_id=sfo.paperId
+	WHERE sfo.openCourseId=#{openCourseId} -->
+	SELECT COUNT(1)
+	FROM examine_task_paper_info etpf
+	WHERE
+	etpf.schoolId= #{schoolId} AND etpf.openCourseId= #{openId} AND etpf.useType=1
+	</select>
+	<select id="getHomeworkCountOfPersonal" parameterType="pageBean" resultType="Integer" >
+	SELECT s1.total-s2.subCount FROM (SELECT COUNT(1) total from
+	student_course_rls scr
+	LEFT JOIN examine_task_paper_info etpf ON etpf.openCourseId=scr.open_id
+	WHERE scr.student_id=#{params.studentId} AND scr.state=1 AND etpf.useType=1) s1,(SELECT
+	COUNT(1) subCount from student_paper_info spf WHERE spf.isExam=0 AND
+	spf.student_id=#{params.studentId} AND spf.isSubmit=1) s2
+
+	</select>
+	<select id="getsubjectTypeCount" resultType="subjectPo" >
+	SELECT p1.ct1,p2.ct2,p3.ct3
+	FROM (SELECT COUNT(1) ct1 FROM subject_info sfo WHERE sfo.state=1 AND
+	sfo.subject_id in (${subjectIds}) AND sfo.subject_type_id=1 ) p1
+	,(SELECT COUNT(1) ct2 FROM subject_info sfo1
+	WHERE sfo1.state=1 AND sfo1.subject_id in (${subjectIds}) AND
+	sfo1.subject_type_id=2) p2,
+	(SELECT COUNT(1) ct3 FROM subject_info sfo2
+	WHERE sfo2.state=1 AND sfo2.subject_id in (${subjectIds}) AND
+	sfo2.subject_type_id=3 ) p3
+	</select>
+	<select id="getSubjectById" resultType="studentSubjectPo" >
+	SELECT * FROM student_subject_info ssf WHERE
+	ssf.student_paper_id=#{studentPaperId} AND
+	ssf.subject_type_id=#{subjectTypeId} 
+	
+	</select>
+	<select id="getSubjectSubDateById" resultType="studentPaperPo" >
+	SELECT spf.submitDate FROM student_paper_info spf WHERE
+	spf.student_paper_id=#{studentPaperId}
+	</select>
+	<select id="getPaperByPaperId" resultType="paperPo" >
+	SELECT
+	pf.subjectIds,pf.subjectNum,pf.title,pf.paper_id,pf.anySubjectScore,pf.totalScore,pf.open_id openId
+	FROM paper_info pf
+	WHERE
+	pf.paper_id=#{paperId}
+	</select>
+	<select id="getHwTest" resultType="subjectPo" >
+	SELECT *FROM subject_info sfo
+	WHERE sfo.function_id in (${functionId},3) AND sfo.state=1 AND sfo.subject_id in  (${subjectIds}) ORDER BY sfo.subject_type_id; 
+	</select>
+	<insert id="hwTestAdd" parameterType="studentSubjectPo"
+		useGeneratedKeys="true" keyProperty="studentSubjectId">
+		INSERT INTO
+		student_subject_info
+		(
+		subject_type_id,
+		student_paper_id,
+		subjectNum,
+		totalScore,
+		anySubjectScore,
+		subjectIds,
+		trueAnswers,
+		stuAnswers,
+		stuScore
+		)
+		VALUES (
+		#{subjectTypeId},
+		#{studentPaperId},
+		#{subjectNum},
+		#{totalScore},
+		#{anySubjectScore},
+		#{subjectIds},
+		#{trueAnswers},
+		#{stuAnswers},
+		#{stuScore}
+		);
+	</insert>
+	<update id="updateStudentPaperByIsSubmit" parameterType="studentPaperPo">
+		UPDATE student_paper_info SET
+		isSubmit = #{isSubmit},
+		score = #{score},
+		submitDate = #{submitDate}
+		WHERE student_paper_id = #{studentPaperId} and student_id = #{student_id}
+	</update>
+	
+	<!-- 查询考试课程名 -->
+	<select id="getCourseName" resultType="openCoursePo">
+		SELECT distinct
+		ocf.open_id,ocf.courseName,ocf.examineStartDate,ocf.examineEndDate
+		FROM student_paper_info spf
+		LEFT JOIN open_course_info ocf ON ocf.open_id=spf.openCourseId
+		WHERE spf.isExam=0 AND spf.schoolId=#{schoolId}
+	</select>
+	<!-- 查询考试课程名 -->
+	<select id="getHwInfo" resultType="openCoursePo">
+	SELECT distinct
+	ocf.open_id,ocf.courseName,ocf.examineStartDate,ocf.examineEndDate,vf.name videoName
+	FROM student_paper_info spf
+	LEFT JOIN open_course_info ocf ON ocf.open_id=spf.openCourseId
+	LEFT JOIN video_info vf ON vf.video_id=spf.videoId
+	WHERE spf.isExam=0 AND spf.schoolId=#{schoolId}
+		<if test="openId != null and openId != ''">
+				 AND ocf.open_id=#{openId}
+	    </if>
+		LIMIT #{begin},#{pageSize}  
+	</select>
+	<!-- 查询考试课程名 -->
+	<select id="getHwStatisticsCount" resultType="Integer">
+	SELECT DISTINCT spf.openCourseId,COUNT(1)FROM student_paper_info spf
+	LEFT JOIN open_course_info ocf ON ocf.open_id=spf.openCourseId
+	WHERE spf.isExam=0 AND spf.schoolId=#{schoolId}
+	</select>
+	<!-- 新增考试或作业-->
+	<insert id="homeworkAdd" parameterType="taskPo"
+		useGeneratedKeys="true" keyProperty="Id">
+		INSERT INTO
+		examine_task_paper_info
+		(
+		title,
+		useType,
+		openCourseId,
+		schoolId,
+		paperIds,
+		videoId,
+		showTime,
+		createDate,
+		createUserId,
+		paperNum
+		)
+		VALUES (
+		#{title},
+		#{useType},
+		#{openCourseId},
+		#{schoolId},
+		#{paperIds},
+		#{videoId},
+		#{showTime},
+		#{createDate},
+		#{createUserId},
+		#{paperNum}
+		);
+	</insert>
+	
+	<!-- 考试信息模块  开始-->
+	
+	<select id="getCourseNameOfHw" resultType="testInfoForm">
+	SELECT DISTINCT ocf.courseName FROM
+	examine_task_paper_info etpf
+	LEFT JOIN open_course_info ocf ON
+	ocf.open_id=etpf.openCourseId
+	WHERE etpf.useType=1 AND
+	etpf.schoolId=#{schoolId}
+    </select>
+    <select id="getVideoNameOfHw" resultType="testInfoForm">
+	SELECT DISTINCT vf.name videoName FROM
+	examine_task_paper_info etpf
+	LEFT JOIN open_course_info ocf ON
+	ocf.open_id=etpf.openCourseId
+	LEFT JOIN video_info vf ON etpf.videoId=vf.video_id
+	WHERE etpf.useType=1 AND
+	etpf.schoolId=#{schoolId}
+    </select>
+    <select id="getHomeworkInfo" parameterType="pageBean" resultType="testInfoForm">
+	SELECT
+	etpf.id,etpf.title,etpf.paperIds,ocf.courseName,etpf.createDate,etpf.paperNum,etpf.videoId,vf.name videoName,ocf.open_id,uf.name
+	FROM
+	examine_task_paper_info etpf
+	LEFT JOIN open_course_info ocf ON ocf.open_id=etpf.openCourseId
+	LEFT JOIN user_info uf ON uf.user_id=etpf.createUserId
+    LEFT JOIN video_info vf ON etpf.videoId=vf.video_id
+	WHERE etpf.useType=1  AND etpf.schoolId=#{schoolId}
+	<if test="params.courseName != null and params.courseName != ''">
+				AND ocf.courseName=#{params.courseName}
+	</if>
+	<if test="params.videoName != null and params.videoName != ''">
+				AND vf.name=#{params.videoName}
+	</if>
+	<if test="params.title != null and params.title != ''">
+				AND (
+				etpf.title  LIKE CONCAT('%',#{params.title},'%')
+				)
+	</if>
+	LIMIT #{startIndex},#{pageSize}  
+    </select>
+     <select id="getCountOfHomework" parameterType="pageBean" resultType="Integer">
+	SELECT COUNT(1) FROM
+	examine_task_paper_info etpf
+	LEFT JOIN open_course_info ocf ON ocf.open_id=etpf.openCourseId
+	LEFT JOIN user_info uf ON uf.user_id=etpf.createUserId
+    LEFT JOIN video_info vf ON etpf.videoId=vf.video_id
+	WHERE etpf.useType=1 AND etpf.schoolId=#{schoolId}
+     <if test="params.courseName != null and params.courseName != ''">
+				AND ocf.courseName=#{params.courseName}
+	</if>
+	<if test="params.videoName != null and params.videoName != ''">
+				AND vf.name=#{params.videoName}
+	</if>
+	<if test="params.title != null and params.title != ''">
+				AND (
+				etpf.title  LIKE CONCAT('%',#{params.title},'%')
+				)
+	</if>
+    </select>
+     <delete id="homeworkDelete" >
+     DELETE FROM examine_task_paper_info  WHERE id=#{Id}
+     </delete>
+	 <select id="getPaperByPaperIdsOfHw" parameterType="pageBean" resultType="testInfoForm">
+	SELECT pf.subjectNum,uf.`name`,ocf.courseName,pf.paper_id,pf.title,pf.createDate,pf.function_id,vf.`name` videoName  FROM paper_info pf 
+    LEFT JOIN open_course_info ocf ON ocf.open_id=pf.open_id
+    LEFT JOIN teacher_info tf ON tf.teacher_id=pf.teacher_id
+    LEFT JOIN user_info uf ON uf.user_id=tf.user_id
+    LEFT JOIN video_info vf ON pf.video_id=vf.video_id
+    WHERE pf.schoolId=#{schoolId} AND pf.function_id in (1,3) AND pf.paper_id in  (${params.paperIds})
+	<if test="params.title != null and params.title != ''">
+				AND (
+				pf.title  LIKE CONCAT('%',#{params.title},'%')
+				)
+	</if>
+	LIMIT #{startIndex},#{pageSize}  
+    </select>
+     <select id="getPaperCountByPaperIdsOfHw" parameterType="pageBean" resultType="Integer">
+	SELECT COUNT(1) FROM paper_info pf 
+    WHERE pf.schoolId=#{schoolId} AND pf.function_id in (1,3) AND pf.paper_id in  (${params.paperIds}) 
+	<if test="params.title != null and params.title != ''">
+				AND (
+				pf.title  LIKE CONCAT('%',#{params.title},'%')
+				)
+	</if>
+    </select>
+<!-- 考试信息模块  结束-->
+<update id="updateTaskCount">
+	UPDATE study_course_info sf LEFT JOIN student_course_rls sr ON
+	sf.studentCourseId=sr.id SET sf.taskCount=#{taskCount},sf.taskGrade=#{taskGrade} WHERE sr.student_id=#{studentId} AND
+	sr.open_id=#{openId}
+</update>
+<update id="updateExamineCount">
+	UPDATE study_course_info sf LEFT JOIN student_course_rls sr ON
+	sf.studentCourseId=sr.id SET 
+	sf.examineCount=#{examineCount},
+	sf.examineGrade=#{examineGrade}  
+	WHERE sr.student_id=#{studentId} AND
+	sr.open_id=#{openId}
+</update>
+<select id="getOpenCourseInfo" resultType="openCoursePo">
+	SELECT ocf.taskPercent,ocf.taskCount,ocf.examinPercent,ocf.examineCount FROM
+	open_course_info ocf WHERE ocf.open_id=#{openId}
+</select>
+<select id="getExamineOrTaskGrade" resultType="Float">
+	SELECT ocf.taskPercent,ocf.taskCount,ocf.examinPercent,ocf.examineCount FROM
+	open_course_info ocf WHERE ocf.open_id=#{openId}
+</select>
+
+</mapper>

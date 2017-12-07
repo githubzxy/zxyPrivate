@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.message.MessageDao">
+	<!-- 查询公告总数 -->
+	<select id="selectPageCount" parameterType="pageBean" resultType="int">
+		SELECT 
+			COUNT(1) 
+		FROM 
+			message_info a
+		INNER JOIN user_info b ON a.fromUserId=b.user_id
+		INNER JOIN user_info c ON a.toUserId = c.user_id
+		WHERE 
+			a.isDelete = 0
+		<if test="keyWords != null and keyWords != ''">
+			and a.title like CONCAT(CONCAT('%', #{keyWords}), '%')
+		</if> 
+	</select>
+	<!--查询列表，分页，关键词  -->
+	<select id="findMessagePos" parameterType="pageBean" resultMap="messageMap">
+		select
+			a.message_id messageId,
+        	a.title title,
+        	a.fromUserId fromUserId,
+        	a.toUserId toUserId,
+        	a.fromDate fromDate,
+        	b.name fromUserName,
+        	c.name toUserName
+		from
+			message_info a
+		INNER JOIN user_info b ON a.fromUserId=b.user_id
+		INNER JOIN user_info c ON a.toUserId = c.user_id
+		where a.isDelete = 0
+			<if test="keyWords != null and keyWords != ''">
+				and a.title like CONCAT(CONCAT('%', #{keyWords}), '%')
+			</if> 
+		limit #{startIndex},#{pageSize}
+	</select>
+	<select id="findMessageById"  resultMap="messageMap">
+		SELECT
+			a.message_id messageId,
+        	a.title title,
+        	a.content content,
+        	a.fromUserId fromUserId,
+        	a.toUserId toUserId,
+        	a.fromDate fromDate,
+        	b.name fromUserName,
+        	c.name toUserName
+        	
+		FROM 
+			message_info a
+		INNER JOIN user_info b ON a.fromUserId =b.user_id
+		INNER JOIN user_info c ON a.toUserId = c.user_id
+		WHERE
+			a.isDelete = 0 and a.message_id =#{messageId}
+	</select>
+	
+    <insert id="addMessage" parameterType="java.util.List" useGeneratedKeys="true">
+  	INSERT INTO
+  				message_info
+  				(
+  				title,
+  				content,
+  				fromUserId,
+  				toUserId,
+  				fromDate	
+  				)
+  
+  		 VALUES
+  		 <foreach collection="list" item="item" index="index"  separator=","   > 
+  		 		(
+  		 		#{item.title},
+  		 		#{item.content},
+  		 		#{item.fromUserId},
+  		 		#{item.toUserId},
+  		 		NOW()
+  		 		)
+  		</foreach>
+  </insert>
+	<update id="updateMessage" parameterType="messagePo">
+		UPDATE 
+    		message_info
+    	SET 
+    		
+    		title=#{title},
+    		content = #{content}
+    	WHERE 
+    		message_id =#{messageId}
+	</update>
+	
+	<!-- 修改state单条 -->
+	<update id="del" parameterType="int">
+    	UPDATE 
+    		message_info
+    	SET 
+    		isDelete = 1
+    	WHERE 
+    		message_id =#{messageId}
+    </update>
+    
+    <!--修改state批量  -->
+    <update id="delAll" parameterType="int">
+        UPDATE 
+    		message_info
+    	SET 		
+    		isDelete = 1
+    	WHERE 
+    		message_id in 
+    		<foreach collection="array" item="id" open="(" separator="," close=")" >
+    		    #{id}
+    		</foreach>
+    </update>
+	<resultMap type="com.yz.center.model.vo.message.MessageVo" id="messageMap">
+	 	<id column="messageId" property="messageId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="fromDate" property="fromDate"/>
+        <association property="fromUser" javaType="userPo">
+        	<id column="fromUserId" property="userId"/>
+        	<result column="fromUserName" property="name"/>
+        </association>
+        <association property="toUser" javaType="userPo">
+        	<id column="toUserId" property="userId"/>
+        	<result column="toUserName" property="name"/>
+        </association>
+	 </resultMap>
+	 
+	 <select id="findMessageBytoUserId" parameterType="int" resultType="messagePo">
+	 	select
+	 		message_id messageId,
+	 		content,
+	 		fromDate,
+	 		title
+	 	from message_info
+	 	where
+	 		 isDelete = 0 and toUserId = #{userId}
+    	ORDER BY
+    		fromDate
+		DESC 
+	 	limit 0,5
+	 </select>
+	 <select id="findPreMessageById" resultType="messagePo" >
+	 	SELECT 
+	 		message_id messageId,
+	 		title
+	  	FROM message_info 
+	  	WHERE message_id  &gt;#{messageId} and toUserId = #{userId} 
+	  	order by message_id ASC LIMIT 1
+	 </select>
+	 
+	 <select id="findNextMessageById" resultType="messagePo">
+	 	SELECT 
+	 		 message_id messageId,
+	 		 title
+	    FROM message_info
+	    WHERE message_id   &lt;#{messageId} 
+	    	  and toUserId = #{userId} 
+	    	  order by message_id DESC 
+	    	  LIMIT 1
+	 </select>
+</mapper>
