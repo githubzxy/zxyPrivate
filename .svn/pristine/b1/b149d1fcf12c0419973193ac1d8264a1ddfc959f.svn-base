@@ -1,0 +1,85 @@
+@CHARSET "UTF-8";
+/*+++++++++++++++++++++++++++++++++++++++++++++++++++//
+//+++++desc:四川亚卓教育科技有限公司+++++++++++++++++++//
+//+++++Website:www.yazhuojy.com++++++++++++++++++++++++//
+//+++++Created By 亚卓技术部+++++++++++++++++++++++++++//
+//++++++++Web page private style or page layout+++++*/
+
+/*************************新建课程**************************/
+.topbar{width:1500px;height:35px;margin:0 auto;}
+.jian-notice{width:94%;margin:25px auto 20px auto;}
+.jian-notice>h2{color:#222;font-weight:500;}
+.jian-notice>p{line-height:25px;font-size:16px;color:#444;}
+.box-step{width:1080px;height:40px;background:url(../images/jianke.png) no-repeat right;margin-top:10px;}
+.box-step li{float:left;width:150px;height:35px;line-height:35px;margin-right:25px;text-align:center;}
+.box-step li  a{display:block;background:#0576ab;color:#fff;font-size:14px;}
+.box-step li.cur a, .box-step li  a:hover{background:#075e00;}
+.form_table td{font-size: 14px;}
+.jqtransform tr td label{padding:0 8px;}
+.jqtransform tr td input[type="radio"]{vertical-align: middle;}
+
+.edit-mulu{width:90%;height:500px;margin:30px auto;font-size:16px;}
+div.content_wrapl{float:left;width:300px;height:480px;border:1px solid #cdcdcd;overflow-y:scroll;}
+.title1 {background: #ddd;height: 40px;font-size:16px;font-family:"微软雅黑";border-bottom:1px solid #ddd;line-height: 40px;text-align:left;text-indent:20px;color:#444;}
+.title1 span{font-size:12px;color:#666;padding-left:10px;}
+.chapter_tree{width:98%;margin:0 auto;height:auto;}
+div.content_wrapr{float:left;margin-left:20px;width:60%;height:480px;border: 1px solid #cdcdcd;}
+.content_wrapr .input-text{height:28px;line-height: 28px;}
+
+
+
+/**上传资源****/
+.ycourse{margin-top:10px;line-height: 25px;font-size:14px;color:#444;}
+.ycourse > span{display: inline-block;float:left;margin:0 20px 10px 0;}
+
+
+.chooseTip{display:none;width:685px;height:455px;overflow:hidden; padding-bottom:40px;position:fixed;top:10%; left:28%;background:#fcfdfd;box-shadow:1px 8px 10px 1px #9b9b9b;border-radius:1px;behavior:url(../js/pie.htc); display:none; z-index:111111;}
+.chooseTiptop{height:40px; line-height:40px; background:url(../images/tcbg.gif)  repeat-x; cursor:pointer;}
+.chooseTiptop span{font-size:14px; font-weight:bold; color:#fff;float:left; text-indent:20px;}
+.chooseTiptop a{display:block; background:url(../images/close.png) no-repeat; width:22px; height:22px;float:right;margin-right:7px; margin-top:10px; cursor:pointer;}
+.chooseTiptop a:hover{background:url(../images/close1.png) no-repeat;}
+.chooseinfo{width:99.5%;margin:0 auto;}
+.chooseTiptopbtn{margin:35px auto 0 250px;}
+/*新建试题**/
+.dis_content {/*! background:#ddd; */width:950px;/*! height:300px; */padding:20px 25px;}
+.dis_content span {padding:0 20px 0 0;}
+.dis_content div.gkt{margin-top:10px;}
+.trueAnwser{margin:10px 0;}
+.trueAnwser span {padding:0 20px 0 0;line-height: 25px;color:#444;}
+
+
+/**creaded by 欧攀 on 2016年10月20 14:33:23开课界面css**/
+.box_course_notice{width:99%;height:100px;margin:10px auto 0 auto;}
+.box_course_notice>h2{font-size:18px;color:#444;font-weight:500;}
+.box_course_notice>p{font-size:14px!important;color:#f00;line-height:25px;text-indent:100px;}
+.box_course_list{width:99%;margin:10px auto;padding-bottom:20px;}
+.sort_x {width:98%;margin:10px 0;}
+.opencourseitems{padding-top:10px;min-height:100px;border:1px solid #dadada;margin-bottom: 30px;border-radius: 8px;}
+.opencourseitems .line {height:1px;border-bottom: 1px solid #dadada;}
+.sort_x h1 {font-family:微软雅黑;font-weight:500;font-size:16px;height:30px;line-height:30px;padding-left:20px;color:#000;}
+.course_names ul li {float:left;margin-left:20px;height:24px;line-height:24px;color:#555;margin-top: 10px;}
+.opencourse-btn{padding-left:30px;margin-top:30px;}
+.opencourse-btn-a{display:block;float:left;margin-bottom:30px;border-radius:5px;margin-right:40px;color:#fff!important;width:120px;height:35px;line-height:35px;text-align:center;font-size:15px;color:#fff;background: #0576ab;}
+.opencourse-btn-a:hover{background: #075e00;text-decoration: none;}
+/**选择教师**/
+.kcxx {margin: 10px 0;padding: 10px 0;}
+.input1 {width: 200px; height: 25px; line-height: 25px; border: 1px solid #ddd; padding: 0 5px;}
+.nexnt{background: #075e00;color:#fff;width: 150px;height: 35px;line-height: 35px;margin-left: 75px;cursor:pointer;text-align: center;}
+
+.chooseteacher{width:685px;height:455px;overflow:hidden; padding-bottom:40px;position:absolute;top:160px; left:28%;background:#fcfdfd;box-shadow:1px 8px 10px 1px #9b9b9b;border-radius:1px;behavior:url(../js/pie.htc); display:none; z-index:1111141;}
+.chooseteachertop{height:40px; line-height:40px; background:url(../images/tcbg.gif)  repeat-x; cursor:pointer;}
+.chooseteachertop span{font-size:14px; font-weight:bold; color:#fff;float:left; text-indent:20px;}
+.chooseteachertop a{display:block; background:url(../images/close.png) no-repeat; width:22px; height:22px;float:right;margin-right:7px; margin-top:10px; cursor:pointer;}
+.chooseteachertop a:hover{background:url(../images/close1.png) no-repeat;}
+.chooseteacherinfo{width:99.5%;margin:0 auto;}
+.chooseteachertopbtn{margin:35px auto 0 250px;}
+
+/**通知公告***/
+.affichedetail{width:94%;margin:0 auto;padding:30px;}
+.affichetitle{font-size:18px;font-weight:500;text-align:center;color:#055f81;}
+.afficheinfo{height:30px;border-bottom:1px dashed #ddd;width:80%;margin:10px auto;font-size:13px;color:#999;text-align:center;}
+.infos{width:80%;margin:10px auto;}
+.infos p{text-indent:25px;line-height:22px;color:#444;font-size:14px;}
+
+
+

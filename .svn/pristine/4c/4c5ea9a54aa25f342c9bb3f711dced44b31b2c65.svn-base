@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.frontPage.FrontPageDao">
+
+<select id="getCourseType" parameterType="Integer" resultType="courseTypePo">
+SELECT  y.type_name parentName,
+c.parentId,
+c.course_type_id courseTypeId,
+c.type_name typeName,
+c.classhour,
+c.url,
+c.school_id schoolId
+from course_type c
+INNER JOIN course_type y on c.parentId=y.course_type_id
+where c.parentId=#{parentId} and c.school_id=#{schoolId} 
+and c.state=1
+ ORDER BY RAND() LIMIT 8
+</select>
+<select id="getCourseParentId" parameterType="Integer" resultType="courseTypePo">
+  SELECT  c.course_type_id courseTypeId,
+  c. type_name typeName 
+  from course_type c
+  WHERE c.parentId=0 and c.school_id=#{schoolId} and c.state=1
+</select>
+<select id="getCourseByCourseTypeId" parameterType="pageBean" resultMap="courseList">
+ SELECT 
+     o.open_id ,
+     c.course_id ,
+     o.courseName,
+     c.classhour,
+     ci.minUrl,
+     ci.maxUrl,
+     o.clickNum,
+     l.lecturer_id ,
+     l.`name` 
+from open_course_info o
+LEFT JOIN  course_info c on c.course_id=o.course_id
+left JOIN  cover_info ci ON c.cover_id=ci.cover_id 
+LEFT JOIN course_lecturer_rls cl on c.course_id=cl.course_id
+LEFT JOIN   lecturer_info l ON l.lecturer_id=cl.lecturer_id
+WHERE
+       o.schoolId=#{schoolId} 
+       AND o.state=1
+       and c.course_type_id=#{courseTypeId}
+       and c.school_id=#{schoolId} 
+       and c.state=1 
+ limit #{startIndex},#{pageSize}
+</select>
+
+<resultMap type="coursePo" id="courseList">
+    	<result column="open_id" property="openId"/>
+    	<result column="course_id" property="courseId"/>
+    	<result column="courseName" property="courseName"></result>
+    	<result column="classhour" property="classhour"></result>
+    	<result column="minUrl" property="minUrl"></result>
+        <result column="maxUrl" property="maxUrl"></result>
+    	<result column="clickNum" property="clickNum"></result>
+    	<collection property="lecturerPo" ofType="com.yz.center.model.po.course.LecturerPo" column="open_id">  
+            <id column="lecturer_id" property="lecturerId"/>  
+            <result column="name" property="name"/>  
+        </collection>  
+    </resultMap>
+<select id="getCourseCountByCourseTypeId" parameterType="pageBean" resultMap="courseCount">
+SELECT  o.open_id,
+        l.lecturer_id ,
+        l.`name` 
+from open_course_info o
+LEFT JOIN  course_info c on c.course_id=o.course_id
+left JOIN  cover_info ci ON c.cover_id=ci.cover_id 
+LEFT JOIN course_lecturer_rls cl on c.course_id=cl.course_id
+LEFT JOIN   lecturer_info l ON l.lecturer_id=cl.lecturer_id
+WHERE
+       o.schoolId=#{schoolId} 
+       AND o.state=1
+       and c.course_type_id=#{courseTypeId}
+       and c.school_id=#{schoolId} 
+       and c.state=1 
+</select>
+<resultMap type="coursePo" id="courseCount">
+    	<result column="open_id" property="openId"/>
+    	<collection property="lecturerPo" ofType="com.yz.center.model.po.course.LecturerPo" column="open_id">  
+            <id column="lecturer_id" property="lecturerId"/>  
+            <result column="name" property="name"/>  
+        </collection>  
+    </resultMap>
+<select id="getCourseTypeNolimit"  resultType="courseTypePo">
+SELECT  y.type_name parentName,
+c.parentId,
+c.course_type_id courseTypeId,
+c.type_name typeName,
+c.classhour,
+c.url,
+c.school_id schoolId
+from course_type c
+INNER JOIN course_type y on c.parentId=y.course_type_id
+where c.parentId=#{parentId} and c.school_id=#{schoolId} 
+and c.state=1
+</select>
+<select id="getCourseByParentId" parameterType="pageBean" resultMap="courses">
+SELECT 
+     o.open_id,
+     c.course_id ,
+     o.courseName,
+     c.classhour,
+     ci.minUrl ,
+     ci.maxUrl ,
+     c.click_num  ,
+     l.lecturer_id ,
+     l.`name` 
+     from open_course_info o 
+     LEFT JOIN course_info c on o.course_id=c.course_id
+     left JOIN  cover_info ci ON c.cover_id=ci.cover_id 
+     LEFT JOIN course_lecturer_rls cl on c.course_id=cl.course_id
+     LEFT JOIN   lecturer_info l ON l.lecturer_id=cl.lecturer_id
+     WHERE 
+      c.course_type_id IN 
+       (SELECT  
+     c.course_type_id courseTypeId
+     from course_type c
+     INNER JOIN course_type y on c.parentId=y.course_type_id
+     where
+    c.parentId=#{courseTypeId} and c.school_id=#{schoolId} 
+     and c.state=1
+) 
+       and o.schoolId=#{schoolId} 
+       AND o.state=1 
+       and c.school_id=#{schoolId}
+       and c.state=1 
+     limit #{startIndex},#{pageSize}
+</select>
+<resultMap type="coursePo" id="courses">
+    	<result column="open_id" property="openId"/>
+    	<result column="course_id" property="courseId"/>
+    	<result column="courseName" property="courseName"></result>
+    	<result column="classhour" property="classhour"></result>
+    	<result column="minUrl" property="minUrl"></result>
+        <result column="maxUrl" property="maxUrl"></result>
+    	<result column="clickNum" property="clickNum"></result>
+    	<collection property="lecturerPo" ofType="com.yz.center.model.po.course.LecturerPo" column="open_id">  
+            <id column="lecturer_id" property="lecturerId"/>  
+            <result column="name" property="name"/>  
+        </collection>  
+    </resultMap>
+<select id="getCourseCountByParentId" parameterType="pageBean" resultMap="courseCountByParentId">
+SELECT 
+      o.open_id,
+      l.lecturer_id ,
+      l.`name`
+     from open_course_info o 
+     LEFT JOIN course_info c on o.course_id=c.course_id
+     left JOIN  cover_info ci ON c.cover_id=ci.cover_id 
+     LEFT JOIN course_lecturer_rls cl on c.course_id=cl.course_id
+     LEFT JOIN   lecturer_info l ON l.lecturer_id=cl.lecturer_id
+     WHERE 
+      c.course_type_id IN 
+       (SELECT  
+     c.course_type_id courseTypeId
+     from course_type c
+     INNER JOIN course_type y on c.parentId=y.course_type_id
+     where
+    c.parentId=#{courseTypeId} and c.school_id=#{schoolId} 
+     and c.state=1
+) 
+       and o.schoolId=#{schoolId} 
+       AND o.state=1 
+       and c.school_id=#{schoolId}
+       and c.state=1 
+</select>
+<resultMap type="coursePo" id="courseCountByParentId">
+    	<result column="open_id" property="openId"/>
+    	<collection property="lecturerPo" ofType="com.yz.center.model.po.course.LecturerPo" column="open_id">  
+            <id column="lecturer_id" property="lecturerId"/>  
+            <result column="name" property="name"/>  
+        </collection>  
+    </resultMap>
+ <!-- 待定 -->
+<select id="getVideosByChapterId" resultType="videoPlayVo">
+      SELECT  p.course_id courseId,
+      o.open_id openId,
+      o.courseName,
+      p.chapter_id chapterId,
+      p.chapter_name chapterName,
+      v.video_id videoId,
+      v.`name` videoName,
+      v.url videoUrl
+     from video_info v, course_chapter p,open_course_info o
+      where p.course_id=o.course_id
+      AND p.chapter_id=v.chapter_id 
+      and  o.open_id=#{openId} 
+      and p.state=1 
+      and v.state=1 
+      and v.school_id=#{schoolId} 
+      and o.schoolId=#{schoolId} 
+      and o.state=1  
+      ORDER BY p.sort
+ </select>
+ <!-- 待定 -->
+ <select id="getVideosJsonByChapterId" resultType="com.yz.center.model.vo.frontPage.VideoPlayJsonVo">
+      SELECT 
+      v.url file
+      from video_info v, course_chapter p,open_course_info o
+      where p.course_id=o.course_id
+      AND p.chapter_id=v.chapter_id 
+      and o.open_id=#{openId} 
+      and p.chapter_id &gt;=#{chapterId} 
+      and p.state=1 
+      and v.state=1 
+      and v.school_id=#{schoolId} 
+      and o.schoolId=#{schoolId} 
+      and o.state=1  
+      ORDER BY p.sort
+ </select>
+ <insert id="addComment" parameterType="commentPo">
+     INSERT INTO course_comment_info (
+      open_id,
+      user_id,
+      content,
+      create_dt,
+      state_dt,
+      state) 
+      VALUES(
+     #{openId},
+     #{userId},
+     #{content},
+     #{creDt},
+     #{staDt},
+     #{state}
+     )
+ </insert>
+ <select id="getCommentList" parameterType="pageBean" resultType="commentPo">
+           SELECT 
+           c.open_id openId,
+           c.comment_id commentId,
+           c.content,
+           c.create_dt creDt,
+           c.user_id userId,
+           u.`name` userName,
+           u.avatar
+           from course_comment_info c
+           left join  user_info u on c.user_id=u.user_id
+           where
+           c.open_id=#{openId} 
+           and c.state=1 
+           and u.school_id=#{schoolId}
+           and u.state=1
+           ORDER BY c.create_dt DESC 
+           limit #{startIndex},#{pageSize}
+ </select>
+ <select id="getCommentListCount" parameterType="pageBean" resultType="Integer">
+           SELECT 
+           count(1)
+           from course_comment_info c,user_info u
+           where c.user_id=u.user_id 
+           and c.open_id=#{openId} 
+           and c.state=1 
+           and u.school_id=#{schoolId}
+           and u.state=1
+ </select>
+  <!-- 待定 -->
+ <select id="getNamesByOpenIdAndChapterId" resultType="com.yz.center.model.vo.frontPage.OpenCourseChapterNameVo">
+SELECT 
+		(SELECT b.type_name from course_type  b WHERE b.course_type_id=c.parentId) parentName,
+		c.type_name courseTypeName,
+		o.courseName openCourseName,
+		a.chapter_name chapterName
+		FROM 
+		 open_course_info o,course_type c,course_info ci,course_chapter a,video_info v
+		WHERE 
+		o.course_id=ci.course_id AND ci.course_type_id=c.course_type_id and ci.course_id=a.course_id and v.chapter_id=a.chapter_id and o.open_id=#{openId} and  a.chapter_id &gt;=#{chapterId}
+  ORDER BY a.sort ;
+ </select>
+ 
+ <select id="getDownloadInfo" resultType="com.yz.center.model.vo.frontPage.DownLoadSourceVo">
+          SELECT 
+          f.chapter_id chapterId,
+          f.file_name fileName,
+          f.url 
+          from chapter_file f
+          where  f.chapter_id=#{chapterId}  
+          and f.schoolId=#{schoolId}  
+ </select>
+  <!-- 待定 -->
+ <select id="getChaptersofSon" parameterType="Integer" resultType="courseChapterPo">
+     SELECT  
+    c.chapter_id,
+    c.chapter_name 
+    from course_chapter c
+     WHERE c.parent_id=#{parentId} 
+     and c.chapter_id &gt;#{chapterId} 
+     and c.state=1
+ </select>
+  <!-- 待定 -->
+ <select id="getvideoByChapterId" parameterType="Integer" resultType="videoPo">
+   SELECT v.video_id videoId,
+   v.chapter_id chapterId,
+   c.parent_id parentId,
+   v.url,
+   c.chapter_name name  
+   from video_info v,
+   course_chapter c
+   where c.chapter_id=v.chapter_id 
+   and v.chapter_id =#{chapterId} 
+   and v.state=1
+   </select>
+    <!-- 待定 -->
+   <select id="getOpenCourseName" parameterType="Integer" resultType="com.yz.center.model.vo.frontPage.OpenCourseChapterNameVo">
+      SELECT 
+      o.courseName openCourseName,
+      c.type_name courseTypeName  
+      from open_course_info o,
+      course_type c,
+      course_info ci 
+      WHERE o.course_id=ci.course_id 
+      and ci.course_type_id=c.course_type_id 
+      and o.open_id=#{openId}
+      </select>
+      
+     <select id="getChildrenChapters" parameterType="Integer" resultType="courseChapterPo">
+     SELECT o.courseName,
+     ci.chapter_id parentId,
+     ci.chapter_name parentName,
+	 c.chapter_id chapterId,
+	 c.chapter_name chapterName,
+	 c.`level` level, 
+	 v.video_id videoId
+	from open_course_info o,course_chapter c
+    LEFT  JOIN course_chapter ci on ci.chapter_id=c.parent_id
+    LEFT  JOIN video_info v on v.chapter_id=c.chapter_id
+    where o.course_id=c.course_id 
+    and c.parent_id=#{parentId} 
+    and o.open_id=#{openId}
+    and c.state=1 
+    ORDER BY c.sort
+    </select> 
+      <select id="getVideosByChapters"  parameterType="Integer" resultType="videoPlayVo">
+        SELECT 
+        ci.chapter_id parentId,
+        ci.chapter_name parentName,
+	    c.chapter_id chapterId,
+	    c.chapter_name chapterName,
+        c.`level` level,
+        v.video_id videoId,
+        v.`name` name,
+        v.url videoUrl,
+        o.courseName
+	from open_course_info o,course_chapter c
+    LEFT  JOIN course_chapter ci on ci.chapter_id=c.parent_id
+    LEFT JOIN video_info v  ON v.chapter_id=c.chapter_id
+    where o.course_id=c.course_id 
+    and c.parent_id=#{parentId} 
+    and o.open_id=#{openId}
+    and c.state=1 
+    ORDER BY c.sort
+      </select>
+      
+      
+      <!-- 查询视频通过章节id -->
+      <select id="getVideosBy" parameterType="Integer" resultType="videoPlayVo">
+	      SELECT 
+	        ci.chapter_id parentId,
+	        ci.chapter_name parentName,
+		    c.chapter_id chapterId,
+		    c.chapter_name chapterName,
+	        c.`level` level,
+	        v.video_id videoId,
+	        v.`name` name,
+	        v.url videoUrl,
+	        o.courseName
+		from open_course_info o,course_chapter c
+	    LEFT  JOIN course_chapter ci on ci.chapter_id=c.parent_id
+	    LEFT JOIN video_info v  ON v.chapter_id=c.chapter_id
+	    where o.course_id=c.course_id 
+	    and c.chapter_id=#{chapterId}
+	    and o.open_id=#{openId} 
+	    and c.state=1 
+      </select>
+</mapper>

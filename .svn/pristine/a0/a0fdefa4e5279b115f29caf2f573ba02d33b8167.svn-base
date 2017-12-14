@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.statistics.VideoStatisticsDao">
+<select id="getCourseBySchool" parameterType="Integer" resultType="openCoursePo">
+   SELECT 
+   o.open_id openId,
+   o.course_id courseId,
+   o.courseName,
+   o.createDate createDate,
+   o.finishDate finishDate
+   FROM open_course_info o
+   WHERE 
+   o.schoolId=#{schoolId} 
+   and o.state != 0
+
+</select>
+<select id="getVideosByCourse" parameterType="pageBean" resultType="videoPo">
+  SELECT v.video_id videoId,
+  v.`name` 
+  from video_info v
+  <trim prefix="WHERE" prefixOverrides="AND|OR">
+  	v.state = 1
+  	<if test="courseId !=null and courseId !=''">
+		  and v.course_id=(SELECT 
+		  o.course_id 
+		  FROM open_course_info o 
+		  WHERE o.open_id=#{courseId}) 
+	 </if>
+  </trim>
+  limit #{startIndex},#{pageSize}
+</select>
+<select id="selectVideosCountByCourse" parameterType="pageBean" resultType="Integer">
+  SELECT COUNT(1) 
+  from video_info v
+  <trim prefix="WHERE" prefixOverrides="AND|OR">
+  	v.state = 1
+  	<if test="courseId !=null and courseId !=''">
+		  and v.course_id=(SELECT 
+		  o.course_id 
+		  FROM open_course_info o 
+		  WHERE o.open_id=#{courseId}) 
+	 </if>
+  </trim>
+ 
+</select>
+<select id="getWatchNumber" parameterType="Integer" resultType="Integer">
+     SELECT 
+     COUNT(p.record_id) 
+     FROM play_record p
+     WHERE p.video_id=#{videoId}
+     and p.select_id=#{openId}
+     and p.state=1
+</select>
+<select id="getWatchStudentByVideo" parameterType="pageBean" resultType="studentStatisticsVo">
+     SELECT 
+     s.number,
+     s.`name`,
+     p.startDate startDt,
+     p.lastDate lastDt
+     FROM play_record p,
+     student_info s
+     WHERE p.student_id=s.student_id 
+     and  p.video_id=#{videoId} 
+     and p.select_id=#{courseId}
+     limit #{startIndex},#{pageSize}
+</select>
+<select id="getWatchStudentCountByVideo" parameterType="pageBean" resultType="Integer">
+     SELECT 
+     count(1)
+     FROM play_record p,
+     student_info s
+     WHERE p.student_id=s.student_id 
+     and  p.video_id=#{videoId} 
+     and p.select_id=#{courseId}
+</select>
+</mapper>

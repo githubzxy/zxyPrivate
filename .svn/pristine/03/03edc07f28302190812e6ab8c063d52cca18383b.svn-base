@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.statistics.DiscussStatisticsDao">
+   <select id="getOpenCourseBySchool" parameterType="Integer" resultType="openCoursePo">
+ SELECT 
+   o.open_id openId,
+   o.course_id courseId,
+   o.courseName
+   FROM open_course_info o
+   WHERE 
+   o.schoolId=#{schoolId}
+   and o.state != 0
+   </select>
+   <select id="getDiscussTheme" parameterType="pageBean" resultType="discussThemeVo">
+   SELECT  
+   d.theme_id themeId,
+   u.number userNumber,
+   u.`name` userName,
+   d.title title,
+   d.createDate 
+   from discuss_theme_info d,
+   user_info u
+   WHERE u.user_id=d.user_id 
+   <if test="courseId != null and courseId != ''">
+	   and d.open_id=#{courseId} 
+   </if> 
+   <if test="params.number != null and params.number !=''">
+				and u.number LIKE CONCAT('%',#{params.number},'%')
+			</if>
+			<if test="params.name != null and params.name !=''">
+				and u.`name` LIKE CONCAT('%',#{params.name},'%')
+			</if>
+   limit #{startIndex},#{pageSize}
+   </select>
+   <select id="getDiscussReplyNumber" parameterType="Integer" resultType="Integer">
+   SELECT COUNT(1) FROM 
+   discuss_info d
+   WHERE d.theme_id=#{themeId}
+   </select>
+   <select id="getDiscussThemeCount" parameterType="pageBean" resultType="Integer">
+   SELECT  
+   COUNT(1) 
+   from discuss_theme_info d,
+   user_info u
+   WHERE u.user_id=d.user_id 
+   <if test="courseId != null and courseId != ''">
+	   and d.open_id=#{courseId} 
+   </if>
+   <if test="params.number != null and params.number !=''">
+				and u.number LIKE CONCAT('%',#{params.number},'%')
+			</if>
+			<if test="params.name != null and params.name !=''">
+				and u.`name` LIKE CONCAT('%',#{params.name},'%')
+			</if>
+   </select>
+</mapper>

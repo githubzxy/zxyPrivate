@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.course.CourseTypeDao">
+	<!-- 查询课程类别及其包含课程的基本信息 -->
+	<select id="findCourseInfoVos" parameterType="int" resultMap="courseInfoMap">
+		select
+			a.course_type_id courseTypeId,
+			a.type_name courseTypeName,
+			b.course_id courseId,
+			b.course_name courseName
+		from course_type a 
+		LEFT JOIN course_info b ON a.course_type_id = b.course_type_id
+		where a.state = 1 and a.school_id = #{schoolId}
+	</select>
+	
+	<resultMap type="com.yz.center.model.vo.course.CourseInfoVo" id="courseInfoMap">
+		<id column="courseTypeId" property="courseTypeId"/>
+        <result column="courseTypeName" property="courseTypeName"/>
+         <collection property="coursePos" ofType="com.yz.center.model.po.course.CoursePo">
+        	<id column="courseId" property="courseId"/>
+        	<result column="courseName" property="courseName"/>
+      	 </collection>
+	</resultMap>
+	
+	<!-- 分页查询课程类别列表 -->
+    <select id="selectCourseTypeList" parameterType="pageBean" resultMap="courseTypeList">
+    	select
+        	a.course_type_id courseTypeId,
+        	a.type_name typeName,
+        	a.type_info typeInfo,
+        	a.createDate createDate,
+			b.user_id userId,
+			b.name
+        from 
+        	course_type a
+		LEFT JOIN user_info b ON a.user_id=b.user_id
+		where a.state = 1 and a.school_id = #{schoolId}
+		<if test="keyWords != null and keyWords != ''">
+			and (
+				a.type_name like CONCAT(CONCAT('%', #{keyWords}), '%')
+				or
+				a.type_info like CONCAT(CONCAT('%', #{keyWords}), '%')
+				)
+		</if> 
+		limit #{startIndex},#{pageSize}
+    </select>
+
+
+	<!-- 查询课程类别总数 -->
+	<select id="selectPageCount" parameterType="pageBean" resultType="int">
+		SELECT COUNT(1) FROM course_type WHERE state = 1 and school_id = #{schoolId}
+		<if test="keyWords != null and keyWords != ''">
+			and (
+				type_name like CONCAT(CONCAT('%', #{keyWords}), '%')
+				or
+				type_info like CONCAT(CONCAT('%', #{keyWords}), '%')
+				)
+		</if> 
+	</select>
+	<select id="findAllCourseTypesName" parameterType="int" resultMap="courseTypeList">
+		
+		SELECT
+			 course_type_id courseTypeId,
+			 type_name typeName
+		 FROM course_type 
+		 WHERE parentId&lt;&gt;0 and state = 1 and school_id = #{schoolId}
+	</select>
+    
+   <resultMap type="courseTypePo" id="courseTypeList">
+        <id column="courseTypeId" property="courseTypeId"/>
+        <result column="typeName" property="typeName"/>
+        <result column="typeInfo" property="typeInfo"/>
+        <result column="createDate" property="createDate"/>
+        <association property="user" javaType="com.yz.center.model.po.user.UserPo">
+        	<id column="userId" property="userId"/>
+        	<result column="name" property="name"/>
+        </association>
+    </resultMap>
+    
+    
+    <!-- 根据课程类别Id查询课程类别信息 -->
+    <select id="findCourseType" parameterType="int" resultType="courseTypePo">
+    	select
+        	a.course_type_id courseTypeId,
+        	a.type_name typeName,
+        	a.parentId,
+        	a.type_info typeInfo,
+        	a.url
+        from 
+        	course_type a
+        where 
+        	a.course_type_id = #{courseTypeId} and a.state = 1
+    </select>
+    
+    	
+ 	<insert id="addCourseType" parameterType="courseTypePo">
+ 		 INSERT INTO 
+    		course_type 
+    	(  
+    		type_name,
+    		parentId,
+    		user_id,
+    		school_id,
+    		type_info,
+    		url,
+    		classhour,
+    		createDate,
+    		stateDate,
+    		state
+    	) VALUES(
+    		#{typeName},
+    		#{parentId},
+    		#{user.userId},
+    		#{schoolId},
+    		#{typeInfo},
+    		#{url},
+    		#{classhour},
+    		#{createDate},
+    		#{stateDate},
+    		#{state}
+    	)
+    </insert>
+    
+    
+        <!-- 修改课程类别信息 -->
+    <update id="updateCourseType" parameterType="courseTypePo">
+    	UPDATE 
+    		course_type
+    	SET 
+    		parentId = #{parentId},
+    		type_name = #{typeName},
+    		type_info=#{typeInfo},
+    		stateDate = #{stateDate},
+    		<if test="url != null">
+    			url = #{url}
+    		</if>
+    		
+    		
+    	WHERE 
+    		course_type_id =#{courseTypeId}
+    </update>
+    
+    
+      <!-- 修改课程类别状态 -->
+    <update id="updateCourseTypeState" parameterType="int">
+    	UPDATE 
+    		course_type
+    	SET 
+    		stateDate = NOW(),
+    		state = 0
+    	WHERE 
+    		course_type_id =#{courseTypeId}
+    </update>
+    
+        <!-- 批量修改课程类别状态 -->
+    <update id="updateAllCourseTypeState" parameterType="int">
+        UPDATE 
+    		course_type
+    	SET 
+    		stateDate = NOW(),
+    		state = 0
+    	WHERE 
+    		course_type_id in 
+    		<foreach collection="array" item="id" open="(" separator="," close=")" >
+    		    #{id}
+    		</foreach>
+    </update>
+ 	<select id="selectParentTypes" resultType="courseTypePo">
+		SELECT 
+		  course_type_id courseTypeId,
+		  type_name typeName
+		FROM 
+			course_type
+		WHERE
+			parentId = 0 AND state = 1
+ 	</select>
+</mapper>

@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>发布通知</title>
+<link href="css/global.css" rel="stylesheet" type="text/css" />
+<link href="css/layout.css" rel="stylesheet" type="text/css" />
+<link href="plugin/Validform/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/jquery-1.11.3.js"></script>
+<script type="text/javascript" src="plugin/Validform/Validform.min.js"></script>
+<script type="text/javascript" src="js/global.js"></script>
+</head>
+<body>
+<div class="place">
+    <span>位置：</span>
+    <ul class="placeul">
+       <li><a href="${res}/" target=＂_blank＂>首页</a></li>
+       <li><a href="#">发布通知</a></li>
+    </ul>
+</div>
+<div class="rightinfo">   
+  <div class="formbody">
+     <div class="formtitle"><span>发布通知</span></div>
+     <div class="padding5">
+      <form class="fbafficheform" action="#">
+        <table class="form_table" width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tbody>
+              <tr>
+                <td class="td_right">通知标题：</td>
+                <td class=""> <input name="name" class="input-text" size="50" type="text"  datatype="*" value="亚卓教育数字教学平台3.0即将进入内测了！"></td>
+                 <td width="500"><span class="Validform_checktip" style="color:#f00;">*必填项</span></td>
+                </tr>
+             
+                 <tr>
+                  <td class="td_right">通知内容：</td>
+                  <td class="">
+                    <textarea name="" id="" cols="80" rows="10" class="textarea">请添加编辑器请添加编辑器请添加编辑器请添加编辑器请添加编辑器请添加编辑器请添加编辑器</textarea>
+                  </td>
+                   <td width="500"><span class="Validform_checktip" style="color:#f00;">*必填项</span></td>
+                 </tr>
+                 <tr>
+                   <td class="td_right">所属课程：</td>
+                   <td>
+                      <select name="" class="select" id="subjectType"> 
+                         <option>请选择</option> 
+                         <option>老司机培训班老司机培训班老司机培训班老司机培训班老司机培训班老司机培训班老司机培训班</option>
+                         <option>老司机培训班</option>
+                       </select>
+                   </td>
+                 </tr>
+                 <tr>
+                  <td class="td_right">被通知人类型：</td>
+                  <td><input type="radio" value="教师" name="status" id="" datatype="*" errormsg="请选择被通知人！"><label>教师</label> &nbsp;&nbsp;&nbsp;<input type="radio" value="学生" name="status" id=""><label>学生</label></td>
+                  <td width="500"><span class="Validform_checktip" style="color:#f00;">*必填项</span></td>
+                 </tr>
+                  <tr class="courseAll">
+                    <td class="td_right" valign="top">被通知人名称：</td>
+                    <td>
+                      <a style="padding-left:20px;color:#f00;" id="clear">清空</a>
+                      <div class="ycourse"></div>
+                    </td>
+                   </tr>
+                 <tr>
+                   <td class="td_right">&nbsp;</td>
+                   <td class="">
+                     <input name="button" class="ext_btn ext_btn_submit" value="确认发布" type="button">
+                   </td>
+                    <td width="500"></td>
+                 </tr>
+               </tbody>
+          </table>
+        </form>
+     </div>
+  </div>
+</div>
+<!--课程选择-->
+<div class="chooseTip" id="courseList">
+      <div class="chooseTiptop"><span>选择被通知人</span><a></a></div>
+      <ul class="prosearch" style="padding: 0 20px;">
+         <li>
+              <i>关键字查询:</i><a><input name="" class="input-text" placeholder="" type="text"></a>
+              <a><input name="" class="search" value="查询" type="button"></a>
+         </li>
+      </ul> 
+      <div class="chooseinfo">
+        <table class="tablelist" style="border-left:none;border-right:none;">
+          <thead>
+              <tr>
+                    <th width="4%"><input name="ur_allSelect" value="" type="checkbox" id="allSelect"></th>
+                    <th>编号</th>
+                    <th>课程名称</th>
+                    <th width="28%">课程类别</th>
+                    <th width="15%">姓名</th>
+                </tr>
+            </thead>
+            <tbody> 
+                <tr>
+                    <td><input name="ur_checkbox" value="" type="checkbox"></td>
+                    <td>1</td>
+                    <td>维护在家庭中的权利与义务 说课1</td>
+                    <td>部颁5门课程第一期课程</td>
+                    <td class="ur_tdValue">欧攀1</td>
+                </tr>
+                <tr>
+                    <td><input name="ur_checkbox" value="" type="checkbox"></td>
+                    <td>2</td>
+                    <td>维护在家庭中的权利与义务 说课1</td>
+                    <td>部颁5门课程第一期课程</td>
+                    <td class="ur_tdValue">欧攀2</td>
+                </tr>
+                <tr>
+                    <td><input name="ur_checkbox" value="" type="checkbox"></td>
+                    <td>3</td>
+                    <td>维护在家庭中的权利与义务 说课1</td>
+                    <td>部颁5门课程第一期课程</td>
+                    <td class="ur_tdValue">欧攀3</td>
+                </tr>
+                <tr>
+                    <td><input name="ur_checkbox" value="" type="checkbox"></td>
+                    <td>4</td>
+                    <td>维护在家庭中的权利与义务 说课1</td>
+                    <td>部颁5门课程第一期课程</td>
+                    <td class="ur_tdValue">欧攀4</td>
+                </tr>
+                <tr>
+                    <td><input name="ur_checkbox" value="" type="checkbox"></td>
+                    <td>5</td>
+                    <td>维护在家庭中的权利与义务 说课1</td>
+                    <td>部颁5门课程第一期课程</td>
+                    <td class="ur_tdValue">欧攀5</td>
+                </tr>
+                <tr>
+                    <td><input name="ur_checkbox" value="" type="checkbox"></td>
+                    <td>6</td>
+                    <td>维护在家庭中的权利与义务 说课1</td>
+                    <td>部颁5门课程第一期课程</td>
+                    <td class="ur_tdValue">欧攀6</td>
+                </tr>
+
+            </tbody>
+          </table>
+          <!--分页-->
+        <div class="pagin">
+            <div class="message">共<i class="blue">122</i>条记录，当前显示第&nbsp;<i class="blue">2&nbsp;</i>页</div>
+            <ul class="paginList">
+                <li class="paginItem"><a href="javascript:;"><span class="pagepre"></span></a></li>
+                <li class="paginItem"><a href="javascript:;">1</a></li>
+                <li class="paginItem current"><a href="javascript:;">2</a></li>
+                <li class="paginItem"><a href="javascript:;">3</a></li>
+                <li class="paginItem"><a href="javascript:;">4</a></li>
+                <li class="paginItem"><a href="javascript:;">5</a></li>
+                <li class="paginItem more"><a href="javascript:;">...</a></li>
+                <li class="paginItem"><a href="javascript:;">10</a></li>
+                <li class="paginItem"><a href="javascript:;"><span class="pagenxt"></span></a></li>
+            </ul> 
+        </div>
+        <!--分页 end-->  
+      </div>
+      <div class="chooseTiptopbtn" style="text-align:center;margin: 35px; 0 0 0;">
+            <input name="" type="button"  class="sure" value="确定" id="fbnotice_sure" />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input name="" type="button"  class="sure" value="选择所有" id="fbnotice_all" />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input name="" type="button"  class="cancel" value="取消" id="ur_cancel" />
+      </div>
+</div>   
+<!--课程选择 end-->
+<!--遮罩层-->
+<div class="mask"></div>
+<!--遮罩层 end-->
+ <script type="text/javascript">
+  $(function(){  
+    $(".fbafficheform").Validform({
+      tiptype:2
+    });
+
+    //选择学生或老师
+    $("input[name=status]").click(function (){
+      $(".mask").show();
+      $("#courseList").fadeIn(200);
+    });
+
+    /**实现确定按钮**/
+    $("#fbnotice_sure").click(function(){
+     $("#courseList").hide();
+      //取得checkbox的集合
+      var selectBoxNum = $("[name='ur_checkbox']");
+
+      var tmp1 = 0;
+      for (var i = 0; i < selectBoxNum.length; i++) {
+        if (selectBoxNum[i].checked == true) {
+          if (tmp1 == 0) {
+            $(".ycourse").html("<span>" + $(".ur_tdValue").eq(i).html() + "<span/>");
+            tmp1++;
+          } else {
+            $(".ycourse").html($(".ycourse").html() + "<span>" + $(".ur_tdValue").eq(i).html() + "<span/>");
+          };
+        };
+      };
+
+    });
+
+    //选择所有老师或学生
+    $("#fbnotice_all").click(function(){
+      $("#courseList").hide();
+      var tmp = $("input[name='status']:checked").val();
+      $(".ycourse").html("<span>" + "所有" + tmp + "<span/>");
+    });
+
+    //清空所选课程
+    $("#clear").click(function(){
+        $(".ycourse").find('span').remove();
+     });
+    
+
+  });
+</script>
+</body>
+</html>

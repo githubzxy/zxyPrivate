@@ -1,0 +1,797 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.course.OpenCourseDao">
+
+
+	<!-- 查询总数 -->
+	<select id="selectPageCount" parameterType="pageBean" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+		open_course_info a
+		left join course_info b on a.course_id = b.course_id		
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+				schoolId = #{schoolId} 
+				<if test="courseId != null and courseId != ''">
+					and a.course_id = #{courseId}				
+				</if>
+				<if test="courseTypeId !=null and courseTypeId !=''">
+					and b.course_type_id = #{courseTypeId}
+				</if>
+ 				<if test="params.isEnd != null and params.isEnd != ''">
+					<if test="params.isEnd == 1">
+						and a.state = 2
+					</if>
+					<if test="params.isEnd == 0">
+						and a.state = 1
+					</if>
+				</if>
+				<if test="params.isEnd == null or params.isEnd == ''">
+					and a.state != 0
+				</if>
+				<if test="params.courseName != null and params.courseName != ''">
+					and a.courseName like CONCAT(CONCAT('%',#{params.courseName}),'%')
+				</if>
+			</trim>
+	</select> 
+	<select id="findStudentCourseCount" parameterType="pageBean" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			student_course_rls a 
+			LEFT JOIN student_info b ON a.student_id = b.student_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			a.open_id = #{params.openId} and a.state= 1
+			<if test="params.name != null and params.name !=''">
+				and b.name like CONCAT(CONCAT('%', #{params.name}), '%')
+			</if>
+			<if test="params.number != null and params.number !=''">
+				and b.number like CONCAT(CONCAT('%', #{params.number}), '%')
+			</if>
+		</trim>
+				
+	</select>
+	<select id="findStudentCourseCount1" resultType="int">
+		SELECT 
+			COUNT(1) 
+		FROM 
+			student_course_rls a 
+		LEFT JOIN student_info b ON a.student_id = b.student_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			a.open_id = #{openId}
+			<if test="name != null and name !=''">
+				and b.name like CONCAT(CONCAT('%', #{name}), '%')
+			</if>
+			<if test="number != null and number !=''">
+				and b.number like CONCAT(CONCAT('%', #{number}), '%')
+			</if>
+		</trim>
+				
+	</select>
+	<select id="findOpenCourseStudents" parameterType="pageBean" resultType="com.yz.center.model.vo.StudentForm">
+		SELECT
+			a.student_id studentId,
+			b.name name,
+			b.number number,
+			c.name className,
+			d.name gradeName
+			FROM
+				student_course_rls a 
+			LEFT JOIN student_info b ON a.student_id = b.student_id
+			LEFT JOIN class_info c ON b.classId = c.class_id
+			LEFT JOIN grade_info d ON c.grade_id = d.grade_id 
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				a.open_id = #{params.openId} and a.state= 1
+				<if test="params.name != null and params.name !=''">
+					and b.name like CONCAT(CONCAT('%', #{params.name}), '%')
+				</if>
+				<if test="params.number != null and params.number !=''">
+					and b.number like CONCAT(CONCAT('%', #{params.number}), '%')
+				</if>
+			</trim>
+		limit #{startIndex},#{pageSize}
+	</select>
+	
+	
+	
+	<!--查询排序  -->
+	<select id="selectSort"  resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+		open_course_info 	
+		WHERE
+				schoolId = #{schoolId}
+	</select>
+	<!--单条查询  -->
+	<select id="findByopenId" parameterType="int" resultType="openCoursePo">
+		SELECT
+			open_id openId,
+			course_id courseId,
+    		user_id userId,
+    		courseName,
+    		courseCode,
+    		studyScore,
+    		passScore,
+    		videoSeePercent,
+    		containVideo,
+    		containTask,
+    		containExamine,
+    		containDiscuss,
+    		videoPercent,
+    		taskPercent,
+    		examinPercent,
+    		discussPercent,
+    		discussCount,
+    		selectStartDate,
+    		selectEndDate,
+    		studyStartDate,
+    		studyEndDate,
+    		examineStartDate,
+    		examineEndDate,
+    		finishDate,
+    		isAllowSelect
+		FROM
+			open_course_info
+		WHERE
+			open_id = #{openId}
+	</select>
+
+	<select id="selectOpenCourses" parameterType="pageBean" resultMap="openCourseMap">
+
+		SELECT 
+			a.open_id openId,
+			a.courseName courseName,
+			a.user_id userId,
+			a.createDate createDate,
+			a.finishDate finishDate,
+			a.studyScore studyScore,
+			a.passScore passScore,
+			e.name userName,
+			a.sort sort,
+			a.state state
+		FROM open_course_info a  
+		LEFT JOIN course_info b ON a.course_id = b.course_id
+		LEFT JOIN user_info e on a.user_id = e.user_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+				a.schoolId = #{schoolId}
+				 <if test="courseId != null and courseId != ''">
+					and a.course_id = #{courseId}				
+				</if>
+				<if test="courseTypeId !=null and courseTypeId !=''">
+					and b.course_type_id = #{courseTypeId}
+				</if>
+ 				<if test="params.isEnd != null and params.isEnd != ''">
+					<if test="params.isEnd == 1">
+						and a.state = 2
+					</if>
+					<if test="params.isEnd == 0">
+						and a.state = 1
+					</if>
+				</if>
+				<if test="params.isEnd == null or params.isEnd == ''">
+					and a.state != 0
+				</if> 
+				<if test="params.courseName != null and params.courseName != ''">
+					and a.courseName like CONCAT(CONCAT('%',#{params.courseName}),'%')
+				</if>
+			</trim>
+			limit #{startIndex},#{pageSize}
+	</select>
+	<resultMap type="com.yz.center.model.vo.course.OpenCourseVo" id="openCourseMap">
+		<id column="openId" property="openId"/>
+        <result column="createDate" property="createDate"/>
+        <result column="finishDate" property="finishDate"/>
+        <result column="studyScore" property="studyScore"/>
+        <result column="passScore" property="passScore"/>
+        <result column="courseName" property="courseName"/>
+        <result column="sort" property="sort"/>
+        <result column="state" property="state"/>
+        <result column="classhour" property="classhour"/>
+         <result column="maxUrl" property="maxUrl"/>
+        <result column="coverMinUrl" property="coverMinUrl"/>
+        <result column="courseInfo" property="courseInfo"/>
+        <result column="lecturerName" property="lecturerName"/>
+        <result column="studentId" property="studentId"/>
+        <result column="allChapterCount" property="allChapterCount"/>
+        <result column="studentCourseId" property="studentCourseId"/>
+        <association property="userPo" javaType="userPo">
+        	<id column="userId" property="userId"/>
+        	<result column="userName" property="name"/>
+        </association>
+	</resultMap>
+	<!--查询学生yi选课总数  -->
+	<select id="findOpencourseCount"  resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+		open_course_info  a
+		left join student_course_rls e on e.open_id = a.open_id	
+		left join student_info d on d.student_id = e.student_id
+		left join course_info b on b.course_id = a.course_id	
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			d.user_id = #{baseConditionVO.userId} and a.state =1 and e.state=1
+			<if test="courseTypeId !=null and courseTypeId !=''">
+			and	b.course_type_id = #{courseTypeId}
+			</if>
+			<if test="baseConditionVO.keywords != null and baseConditionVO.keywords !=''">
+			and	a.courseName like CONCAT(CONCAT('%', #{baseConditionVO.keywords}), '%')
+			</if>
+		</trim>
+		
+	</select>
+	<!--查询学生已选课程  -->
+	<select id="findByUserId" resultMap="openCourseMap">
+		select
+				a.open_id openId,
+				a.courseName courseName,
+				a.createDate createDate,
+				a.videoCount allChapterCount,
+				b.course_info courseInfo,
+				c.minUrl  coverMinUrl,
+				c.maxUrl maxUrl,
+				d.student_id studentId,
+				e.id studentCourseId
+			from open_course_info a
+			left join course_info b  on a.course_id = b.course_id
+			left join cover_info c on b.cover_id = c.cover_id
+			left join student_course_rls e on e.open_id = a.open_id
+			left join student_info d on d.student_id = e.student_id
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				d.user_id = #{baseConditionVO.userId} and a.state =1 and e.state=1
+				<if test="courseTypeId !=null and courseTypeId !=''">
+				and	b.course_type_id = #{courseTypeId}	
+				</if>
+				<if test="baseConditionVO.keywords != null and baseConditionVO.keywords !=''">
+				and	a.courseName like CONCAT(CONCAT('%', #{baseConditionVO.keywords}), '%')
+				</if>
+			</trim>
+		 	limit #{baseConditionVO.startIndex},#{baseConditionVO.pageSize}
+	</select>	
+	<select id="findOpencourseCount2" resultType="int">
+		select
+				COUNT(1)
+		from    
+				open_course_info a
+	 	left join course_info b  on a.course_id = b.course_id
+		left join course_lecturer_rls c on a.course_id = c.course_id
+		left join lecturer_info d on c.lecturer_id = d.lecturer_id
+		left join cover_info e on b.cover_id = e.cover_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			a.open_id  NOT IN  
+			(   SELECT m.open_id 
+				FROM student_course_rls m
+				LEFT JOIN student_info b ON m.student_id = b.student_id  
+				WHERE b.user_id=#{baseConditionVO.userId} and m.state=1)
+			and a.state=1 
+			and selectStartDate &lt; NOW()
+			AND NOW() &lt; selectEndDate
+			<if test="courseTypeId !=null and courseTypeId !='' ">
+				and	b.course_type_id = #{courseTypeId}
+			</if>
+			<if test="baseConditionVO.keywords != null and baseConditionVO.keywords !='' ">
+				and	a.courseName like CONCAT(CONCAT('%', #{baseConditionVO.keywords}), '%')
+			</if>
+		</trim>
+	</select>
+	<!--学生未选课程  -->
+	<select id="find2ByUserId" resultMap="openCourseMap">
+		select
+				a.open_id openId,
+				a.courseName courseName,
+				b.classhour classhour,
+				d.name lecturerName,
+				e.minUrl  coverMinUrl,
+				e.maxUrl  maxUrl
+		from    
+				open_course_info a
+	 	left join course_info b  on a.course_id = b.course_id
+		left join course_lecturer_rls c on a.course_id = c.course_id
+		left join lecturer_info d on c.lecturer_id = d.lecturer_id
+		left join cover_info e on b.cover_id = e.cover_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			a.open_id  NOT IN  
+			(   SELECT a.open_id 
+				FROM student_course_rls a 
+				LEFT JOIN student_info b ON a.student_id = b.student_id  
+				WHERE b.user_id=#{baseConditionVO.userId} and a.state=1)
+			and a.state=1 
+			and a.selectStartDate &lt; NOW()
+			AND NOW() &lt; a.selectEndDate
+			<if test="courseTypeId !=null and courseTypeId !=''">
+			and	b.course_type_id = #{courseTypeId}
+			</if>
+			<if test="baseConditionVO.keywords != null and baseConditionVO.keywords !=''">
+			and	a.courseName like CONCAT(CONCAT('%', #{baseConditionVO.keywords}), '%')
+			</if>
+		</trim>
+		limit #{baseConditionVO.startIndex},#{baseConditionVO.pageSize}
+	</select>
+	<insert id="importStudents" parameterType="java.util.List" useGeneratedKeys="true">
+		INSERT INTO
+			student_course_rls
+			(  
+			open_id,
+			student_id,
+			createDate
+			)
+		VALUES
+		 <foreach collection="list" item="item" index="index"  separator=",">
+			(
+			#{item.openId},
+			#{item.studentId},
+			NOW()
+			)
+		</foreach>		
+	</insert>
+	
+	<insert id="add" parameterType="openCoursePo">
+ 		 INSERT INTO 
+    		open_course_info
+    	(  
+    		course_id,
+    		user_id ,
+    		courseName,
+    		schoolId,
+    		courseCode,
+    		studyScore,
+    		passScore,
+    		videoSeePercent,
+    		containVideo,
+    		containTask,
+    		containExamine,
+    		containDiscuss,
+    		videoPercent,
+    		taskPercent,
+    		examinPercent,
+    		discussPercent,
+    		discussCount,
+    		selectStartDate,
+    		selectEndDate,
+    		studyStartDate,
+    		studyEndDate,
+    		examineStartDate,
+    		examineEndDate,
+    		createDate,
+    		finishDate,
+    		isAllowSelect
+    	) VALUES(
+    		#{courseId},
+    		#{userId},
+    		#{courseName},
+    		#{schoolId},
+    		#{courseCode},
+    		#{studyScore},
+    		#{passScore},
+    		
+    		#{videoSeePercent},
+    		
+    		#{containVideo},
+    		#{containTask},
+    		#{containExamine},
+    		#{containDiscuss},
+    		
+    		#{videoPercent},
+    		#{taskPercent},
+    		#{examinPercent},
+    		#{discussPercent},
+    		
+    		#{discussCount},
+    		
+    		#{selectStartDate},
+    		#{selectEndDate},
+    		#{studyStartDate},
+    		#{studyEndDate},
+    		#{examineStartDate},
+    		#{examineEndDate},
+    		NOW(),
+    		#{finishDate},
+    		#{isAllowSelect}
+    	)
+    </insert>
+    
+    
+     <insert id="adds" parameterType="java.util.List" useGeneratedKeys="true">
+  	INSERT INTO
+  				open_course_info
+  				(
+  			course_id,
+    		user_id ,
+    		courseName,
+    		schoolId,
+    		courseCode,
+    		studyScore,
+    		passScore,
+    		
+    		videoSeePercent,
+    		
+    		containVideo,
+    		containTask,
+    		containExamine,
+    		containDiscuss,
+    		videoPercent,
+    		taskPercent,
+    		examinPercent,
+    		discussPercent,
+    		discussCount,
+    		selectStartDate,
+    		selectEndDate,
+    		studyStartDate,
+    		studyEndDate,
+    		examineStartDate,
+    		examineEndDate,
+    		createDate,
+    		finishDate,
+    		isAllowSelect,
+    		sort	
+  				)
+  
+  		 VALUES
+  		 <foreach collection="list" item="item" index="index"  separator=","   > 
+  		 		(
+  		 	#{item.courseId},
+    		#{item.userId},
+    		#{item.courseName},
+    		#{item.schoolId},
+    		#{item.courseCode},
+    		#{item.studyScore},
+    		#{item.passScore},
+    		
+    		#{item.videoSeePercent},
+    		
+    		#{item.containVideo},
+    		#{item.containTask},
+    		#{item.containExamine},
+    		#{item.containDiscuss},
+    		
+    		#{item.videoPercent},
+    		#{item.taskPercent},
+    		#{item.examinPercent},
+    		#{item.discussPercent},
+    		
+    		#{item.discussCount},
+    		
+    		#{item.selectStartDate},
+    		#{item.selectEndDate},
+    		#{item.studyStartDate},
+    		#{item.studyEndDate},
+    		#{item.examineStartDate},
+    		#{item.examineEndDate},
+    		NOW(),
+    		#{item.finishDate},
+    		#{item.isAllowSelect},
+    		#{item.sort}
+  		 		)
+  		</foreach>
+  </insert>
+    
+    <update id="update" parameterType="openCoursePo">
+ 
+	    UPDATE
+	   		 open_course_info
+	   	SET 
+	   		courseName=#{courseName},
+    		courseCode=#{courseCode},
+    		studyScore=#{studyScore},
+    		passScore=#{passScore},
+    		videoSeePercent=#{videoSeePercent},
+    		containVideo=#{containVideo},
+    		containTask=#{containTask},
+    		containExamine=#{containExamine},
+    		containDiscuss=#{containDiscuss},
+    		videoPercent=#{videoPercent},
+    		taskPercent=#{taskPercent},
+    		examinPercent=#{examinPercent},
+    		discussPercent=#{discussPercent},
+    		discussCount=#{discussCount},
+    		selectStartDate=#{selectStartDate},
+    		selectEndDate=#{selectEndDate},
+    		studyStartDate=#{studyStartDate},
+    		studyEndDate=#{studyEndDate},
+    		examineStartDate=#{examineStartDate},
+    		examineEndDate=#{examineEndDate},
+    		finishDate=#{finishDate},
+    		isAllowSelect=#{isAllowSelect}
+	    WHERE 
+	    	open_id =#{openId}
+    </update>
+    <!-- 修改state单条 -->
+	<update id="deleteById" parameterType="int">
+    	UPDATE 
+    		open_course_info
+    	SET 
+    		state = 0
+    	WHERE 
+    		open_id =#{openId}
+    </update>
+    <!--修改state批量  -->
+    <update id="deleteByIds" parameterType="int">
+        UPDATE 
+    		open_course_info
+    	SET 		
+    		state = 0
+    	WHERE 
+    		open_id in 
+    		<foreach collection="array" item="id" open="(" separator="," close=")" >
+    		    #{id}
+    		</foreach>
+    </update>
+ 
+    <!-- 结课 -->	
+	<update id="overCourse" parameterType="int" >
+	UPDATE
+		open_course_info
+	SET
+		state = 2
+	WHERE
+		open_id = #{openId}
+	</update>
+    <!--删除选课学生  -->
+    <update id="delCourseStudentById">
+	    UPDATE
+			student_course_rls
+		SET
+			state = 0
+		WHERE
+			student_id = #{studentId}
+			and open_id = #{openId}
+			and state=1
+  	</update>
+	<insert id="addCourseStudent" parameterType="studentCoursePo" >
+		INSERT
+			student_course_rls
+			(
+			open_id,
+			student_id,
+			createDate
+			)	
+		VALUES
+			(
+			#{openId},
+			#{studentId},
+			#{createDate}
+			)
+			<selectKey keyProperty="id" resultType="int" order="AFTER">  
+          		select LAST_INSERT_ID()   
+      		</selectKey>	
+	</insert>
+	<insert id="addStudyStudent" parameterType="int">
+		INSERT
+			study_course_info
+			(
+				createDate,
+				studentCourseId
+			)
+		VALUES(
+			
+			NOW(),
+			#{studentCourseId}
+			
+			)
+	</insert>
+	<select id="selectStudentCourseId" resultType="java.lang.Integer">
+		select
+			a.id
+		from
+			student_course_rls a
+		where
+			a.open_id=#{openId} and a.student_id = #{studentId}
+	</select>
+	<update id="delstudyCourseById" parameterType="int">
+		UPDATE
+			study_course_info
+		SET
+			state = 0
+		WHERE
+			id=#{studentCourseId}
+	</update>
+	
+	
+	
+	<select id="selectPageCount2" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			open_course_info  
+			
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			schoolId = #{baseConditionVO.schoolId} and state !=0
+			<if test="isEnd != null and isEnd !=''">
+				and state like CONCAT(CONCAT('%', #{isEnd}), '%')
+			</if>
+			<if test="courseName != null and courseName !=''">
+				and courseName like CONCAT(CONCAT('%', #{courseName}), '%')
+			</if>
+		</trim>
+	</select>
+	<select id="CourseStatistics" resultType="com.yz.center.model.vo.course.OpenCourseVo2">
+		SELECT 
+				open_id,
+				courseName,
+				studyStartDate,
+				studyEndDate
+			FROM 
+			open_course_info 
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			schoolId = #{baseConditionVO.schoolId} and state !=0
+			<if test="isEnd != null and isEnd !=''">
+				and state like CONCAT(CONCAT('%', #{isEnd}), '%')
+			</if>
+			<if test="courseName != null and courseName !=''">
+				and courseName like CONCAT(CONCAT('%', #{courseName}), '%')
+			</if>
+		</trim>
+		limit #{baseConditionVO.startIndex},#{baseConditionVO.pageSize}
+	</select>
+	<select id="selectStudentCountByopenId" parameterType="int" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			student_course_rls
+		where 
+			open_id = #{openId}	and state !=0	
+	</select>
+	<select id="selectexamPeopleCount" parameterType="int" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			student_paper_info a 
+		left join paper_info b on b.paper_id = a.paperId 
+		where 
+			a.openCourseId = #{openId} and b.function_id = #{2}		
+	</select>
+	<select id="selectvideoCount" parameterType="int" resultType="int">
+		SELECT a.videoCount 
+			FROM 
+			study_course_info a
+		LEFT JOIN student_course_rls b ON a.id = b.id
+		where 
+			b.open_id = #{openId}	
+	</select>
+	<select id="selectexamCount" parameterType="int" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			student_paper_info a 
+		left join paper_info b on b.paper_id = a.paperId 
+		where 
+			a.openCourseId = #{openId} and b.function_id = #{2}	and a.isSubmit = 1
+	</select>
+	<select id="selecttaskCount" parameterType="int" resultType="int">
+		SELECT a.taskCount 
+			FROM 
+			study_course_info a
+		LEFT JOIN student_course_rls b ON a.id = b.id
+		where 
+			b.open_id = #{openId}
+	</select>
+	<select id="selectdiscussCount" parameterType="int" resultType="int">
+		SELECT a.discussCount 
+			FROM 
+			study_course_info a
+		LEFT JOIN student_course_rls b ON a.id = b.id
+		where 
+			b.open_id = #{openId}
+	</select>
+	<select id="selectpassPeople" parameterType="int" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			study_course_info a
+		LEFT JOIN student_course_rls b ON a.id = b.id
+		where 
+			b.open_id = #{openId} and a.finalGrade &gt;= 60	
+	</select>
+	<select id="findCountByopenId" parameterType="int" resultType="int">
+		SELECT
+			COUNT(1)
+		FROM
+			course_chapter a
+		LEFT JOIN course_info b ON a.course_id = b.course_id
+		LEFT JOIN open_course_info c ON b.course_id = c.course_id
+		WHERE
+			c.open_id = #{openId}
+	</select>
+	
+	<update id="updateStudentCourse" parameterType="int">
+		
+		UPDATE
+			student_course_rls
+		SET
+			state = 1
+		WHERE
+			id=#{studentCourseId}
+	</update>
+	
+	<update id="updateStudy" parameterType="int" >
+		
+		UPDATE
+			study_course_info
+		SET
+			state = 1
+		WHERE
+			studentCourseId=#{studentCourseId}
+	</update>
+	
+	<select id="findcountOpencourse" parameterType="com.yz.center.model.vo.BaseConditionVO" resultType="int">
+		SELECT COUNT(1) 
+			FROM 
+			open_course_info  	
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			schoolId = #{schoolId} and state !=0
+			<if test="keywords != null and keywords !=''">
+				and courseName like CONCAT(CONCAT('%', #{keywords}), '%')
+			</if>
+		</trim>
+	</select>
+	
+	<select id="findIndexOpencourse" parameterType="com.yz.center.model.vo.BaseConditionVO" resultType="com.yz.center.model.vo.course.OpenCourseVo">
+		SELECT 
+			a.open_id openId,
+			c.maxUrl,
+			a.courseName,
+			b.classhour,
+			e.name lecturerName
+		FROM 
+			open_course_info a 	
+		LEFT JOIN course_info b ON a.course_id =b.course_id
+		LEFT JOIN cover_info c ON b.cover_id =c.cover_id
+		LEFT JOIN course_lecturer_rls d ON b.course_id=d.course_id
+		LEFT JOIN lecturer_info e ON e.lecturer_id = d.lecturer_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			a.schoolId = #{schoolId} and a.state !=0
+			<if test="keywords != null and keywords !=''">
+				and a.courseName like CONCAT(CONCAT('%', #{keywords}), '%')
+			</if>
+		</trim>
+		limit #{startIndex},#{pageSize}
+	</select>
+	
+	<update id="updateTaskCount" parameterType="int">
+		UPDATE 
+			open_course_info
+		SET
+			taskCount = taskCount+1
+		WHERE 
+			open_id = #{openId}
+	</update>
+	<update id="updateTaskCountOfDelete">
+		UPDATE 
+			open_course_info
+		SET
+			taskCount = taskCount-1
+		WHERE 
+			open_id = #{openId}
+	</update>
+	<update id="updateExamineCount" parameterType="int">
+		UPDATE 
+			open_course_info
+		SET
+			examineCount = examineCount + 1
+		WHERE 
+			open_id =#{openId}
+	</update>
+	<update id="updateExamineCountOfDelete">
+		UPDATE 
+			open_course_info
+		SET
+			examineCount = examineCount - 1
+		WHERE 
+			open_id =#{openId}
+	</update>
+	<select id="findstudyChapterCount" resultType="int">
+	
+			
+			SELECT
+				videoCount
+			FROM
+				study_course_info
+			WHERE
+				studentCourseId = #{studentCourseId}
+	</select>
+	
+	<select id="getAllopenCourse" parameterType="int" resultType="com.yz.center.model.vo.course.OpenCourseVo">
+		SELECT
+			open_id,
+			courseName
+		FROM
+			open_course_info
+		WHERE
+			schoolId = #{schoolId}
+		
+	</select>
+	
+	
+</mapper>

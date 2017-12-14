@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.student.StudentDao">
+<insert id="addLoginInfo" parameterType="com.yz.center.model.vo.StudentForm" useGeneratedKeys="true" keyProperty="loginId">
+	INSERT INTO
+		login_info(
+		schoolId,
+		loginName,
+		loginPwd,
+		roleCode
+		) VALUES (
+		#{schoolId},
+		#{number},
+		#{loginPwd},
+		#{roleId}
+		)
+	</insert>
+<insert id="addUserInfo" parameterType="com.yz.center.model.vo.StudentForm" useGeneratedKeys="true" keyProperty="userId">
+	INSERT INTO
+		user_info(
+		school_id,
+		roleCode,
+		loginId,
+		name,
+		number,
+		email,
+		gender,
+		birthday,
+		avatar,
+		phone,
+		mobile,
+		IdCard,
+		info,
+		createDate,
+		stopDate
+		) VALUES (
+		#{schoolId},
+		#{roleId},
+		#{loginId},
+		#{name},
+		#{number},
+		#{email},
+		#{gender},
+		#{birthday},
+		#{avatar},
+		#{phone},
+		#{mobile},
+		#{idCard},
+		#{info},
+		#{createDate},
+		#{stopDate}
+		)
+	</insert>
+	<insert id="addStudentInfo" parameterType="com.yz.center.model.vo.StudentForm"  useGeneratedKeys="true" keyProperty="studentId">
+	INSERT INTO
+		student_info(
+		user_id,
+		login_id,
+		name,
+		number,
+		roleCode,
+		classId
+		) VALUES (
+		#{userId},
+		#{loginId},
+		#{name},
+		#{number},
+		#{roleId},
+		#{classId}
+		)
+	</insert>
+	<insert id="addStudentClassRls" parameterType="com.yz.center.model.vo.StudentForm">
+	INSERT INTO
+		student_class_rls(
+		student_id,
+		class_id
+		) VALUES (
+		#{studentId},
+		#{classId}
+		)
+	</insert>
+	<update id="del" parameterType="Integer" >
+      UPDATE user_info u SET u.state=-1 WHERE u.user_id=(SELECT s.user_id from student_info s WHERE s.student_id=#{studentId})
+    </update>
+    
+    
+     <select id="selectStudentById" parameterType="Integer"  resultType="StudentForm">
+    	SELECT 
+    	l.login_id as loginId,
+    	u.user_id as userId,
+    	s.student_id as studentId,
+        s.name,
+        u.birthday,
+        u.birthday birthday2, 
+        u.gender,
+        u.email,
+        l.loginPwd,
+        u.phone,
+        s.number,
+        u.IdCard,
+        u.info,
+        u.avatar 
+		FROM
+			student_info s
+		LEFT JOIN user_info u ON s.user_id = u.user_id 
+    LEFT JOIN login_info l ON u.loginId=l.login_id
+		where s.student_id =#{studentId};
+    </select>
+    <select id="selectClassById" parameterType="Integer" resultType="com.yz.center.model.vo.ClassForm">
+    SELECT 
+    	c.class_id as classId,
+    	c.grade_id as gradeId,
+    	c.name,
+    	c.info,
+    	g.name as gradeName
+		FROM
+			student_info s,class_info c, grade_info g
+		where s.classId=c.class_id and c.grade_id=g.grade_id and s.student_id =#{studentId};
+    </select>
+ 
+    <update id="updateLoginInfo" parameterType="com.yz.center.model.po.LoginPo">
+      UPDATE login_info l SET 
+      l.loginName=#{loginName},
+      l.loginPwd=#{loginPwd}
+      where l.login_id=#{id}
+    </update>
+    <update id="updateUserInfo" parameterType="com.yz.center.model.po.UserPo">
+     UPDATE user_info u SET 
+	     <if test="avatar != null and avatar != ''">
+	     	u.avatar=#{avatar},
+	     </if>
+	     u.email=#{email},
+	     u.gender=#{gender},
+	     u.IdCard=#{idCard},
+	     u.info=#{info},
+	     u.`name`=#{name},
+	     u.number=#{number},
+	     u.phone=#{phone}
+     where u.user_id=#{id}
+     </update>
+     <update id="updateStudentInfo" parameterType="com.yz.center.model.po.StudentPo">
+      UPDATE student_info  s SET
+	      s.major_id=#{majorId},
+	      s.name=#{name},
+	      s.number=#{number},
+	      s.classId=#{classId} 
+      where s.student_id=#{id}
+      </update>
+      
+      
+       <select id="selectStudentList" parameterType="pageBean"  resultMap="studentList">
+    	SELECT 
+    	s.student_id,
+        u.name,
+        u.number,
+        c.name as className,
+        g.name as gradeName,
+        u.phone,
+        u.email,
+        u.state
+		FROM
+		student_info s 
+		LEFT JOIN user_info u ON s.user_id = u.user_id
+		LEFT JOIN class_info c ON s.classId= c.class_id
+		LEFT JOIN grade_info g ON c.grade_id=g.grade_id
+		where (u.state=1 or u.state=0) and u.school_id = #{schoolId} 
+			<if test="params.student.number != null and params.student.number !=''">
+				AND u.number=#{params.student.number}
+			</if>
+			<if test="params.student.name != null and params.student.name !=''">
+				AND u.name LIKE CONCAT('%',#{params.student.name},'%')
+			</if>
+			<if test="params.student.classId != null and params.student.classId !=''">
+				AND s.classId=#{params.student.classId}
+			</if>
+		limit #{startIndex},#{pageSize}
+    </select>
+    <resultMap type="com.yz.center.model.vo.StudentList" id="studentList">
+    	<result column="student_id" property="studentId"/>
+    	<result column="name" property="name"/>
+    	<result column="number" property="number"></result>
+    	<result column="className" property="className"/>
+    	<result column="gradeName" property="gradeName"/>
+    	<association property="userPo" javaType="com.yz.center.model.po.UserPo">
+    	    <id property="id" column="user_id"/>
+    		<result column="phone" property="phone"/>
+    		<result column="email" property="email"/>
+    		<result column="state" property="state"/>
+    	</association>
+    </resultMap>
+    
+    <select id="countItems" parameterType="pageBean" resultType="Integer">
+    SELECT 
+    	COUNT(1) 
+    from 
+    	student_info s,user_info u where s.user_id = u.user_id 
+		AND (u.state=1 or u.state=0) 
+		AND u.school_id = #{schoolId}
+	<if test="params.student.number != null and params.student.number !=''">
+				AND s.number=#{params.student.number}
+			</if>
+			<if test="params.student.name != null and params.student.name !=''">
+				AND s.name LIKE CONCAT('%',#{params.student.name},'%')
+			</if>
+			<if test="params.student.classId != null and params.student.classId !=''">
+				AND s.classId=#{params.student.classId}
+			</if>
+    </select>
+    
+    <update id="resetUse" parameterType="Integer" >
+      UPDATE user_info u SET u.state=1 WHERE u.user_id=(SELECT s.user_id from student_info s WHERE s.student_id=#{studentId})
+    </update>
+    
+    <update id="resetLogOut" parameterType="Integer" >
+      UPDATE user_info u SET u.state=0 WHERE u.user_id=(SELECT s.user_id from student_info s WHERE s.student_id=#{studentId})
+    </update>
+    
+   <select id="userBynumber"  resultType="com.yz.center.model.po.UserPo">
+   select * from user_info u where u.number=#{number} and u.school_id = #{schoolId} and u.state=1
+   </select>
+   <select id="validate"  resultType="Integer" parameterType="com.yz.center.model.vo.StudentForm" >
+   select count(1) from user_info u where u.number=#{number} and u.school_id = #{schoolId} and u.state=1
+   </select>
+   <select id="getGradeList" parameterType="Integer" resultMap="gradeList">
+    	SELECT g.grade_id,
+    	g.`name`,
+    	g.schoolId,
+    	g.createDate,
+    	g.stateDate,
+    	g.state from grade_info g where g.schoolId=#{schoolId}
+    </select>
+    <resultMap type="com.yz.center.model.po.GradePo" id="gradeList">
+    	<id column="grade_id" property="gradeId"/>
+    	<result column="name" property="name"/>
+    	<result column="createDate" property="creDt"></result>
+    	<result column="stateDate" property="staDt"></result>
+    	<result column="state" property="state"></result>
+    	<association property="schoolPo" javaType="com.yz.center.model.po.school.SchoolPo">
+    	    <id property="schoolId" column="school_id"/>
+    	    <result column="school_name" property="name"/>
+    	</association>
+    </resultMap>
+     <select id="getClassList" resultMap="classList">
+    	SELECT c.class_id,
+    	c.name,
+    	c.info 
+    	from class_info c where c.schoolId=#{schoolId} and c.grade_id=#{gradeId} and c.state=1
+    </select>
+    <resultMap type="com.yz.center.model.vo.ClassForm" id="classList">
+    	<id column="class_id" property="classId"/>
+    	<result column="name" property="name"/>
+    	<result column="info" property="info"></result>
+    </resultMap>
+    <select id="getClassIdByGradeAndClassName" resultType="Integer">
+     SELECT 
+     c.class_id as classId
+    from grade_info g,class_info c
+    where g.grade_id=c.grade_id  
+    and g.name like CONCAT('%',#{gradeName},'%') and c.name like CONCAT('%',#{className},'%')
+    </select>
+    
+    
+    <select id="selectPageCount"  resultType="int">
+    	SELECT COUNT(1) FROM student_info 
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+    		<if test="classId != null and classId !=''">
+    		 classId=#{classId}
+    		</if>
+	    	<if test="pageBean.keyWords != null and pageBean.keyWords !=''">
+				and (
+					name like CONCAT(CONCAT('%', #{pageBean.keyWords}), '%')
+					)
+			</if> 
+		</trim>
+    </select>
+    <select id="getStudentByclassId" resultMap="studentByclassIdMap">
+    	SELECT
+    		user_id userId,
+    		student_id id,
+    		number,
+    		name
+    	FROM
+    		student_info 
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+    	<if test="classId != null and classId !=''">
+    		 classId=#{classId}
+    		</if>
+    		<if test="pageBean.keyWords != null and pageBean.keyWords !=''">
+				and (
+					name like CONCAT(CONCAT('%', #{pageBean.keyWords}), '%')
+					)
+			</if> 
+		</trim>
+    	LIMIT #{pageBean.startIndex},#{pageBean.pageSize}
+    </select>
+    <resultMap type="com.yz.center.model.po.StudentPo" id="studentByclassIdMap">
+    	<id column="id" property="id"/>
+    	<result column="number" property="number"/>
+    	<result column="name" property="name"/>
+    	<association property="user" javaType="com.yz.center.model.po.UserPo">
+    		<id column="userId" property="id"/>
+    	</association>
+    </resultMap>
+    
+    
+    
+	<select id="getAllStudentByclassId" parameterType="int" resultType="int">
+			SELECT
+			user_id userId
+			FROM student_info 
+			WHERE classId=#{classId}
+	</select>
+	<select id="findStudentId" parameterType="int" resultType="int">
+		SELECT
+			student_id studentId
+		FROM student_info 
+		WHERE
+			user_id=#{userId}
+	</select>
+	<!--查询到选择的所有课程  -->
+	<select id="findMycourse" parameterType="int" resultMap="StudentCourseVoMap">
+		SELECT a.id studentCourseId,
+				a.open_id openId, 
+				b.courseName openCourseName,
+				b.examineStartDate exameStartTime,
+				b.examineEndDate exameEndTime,
+				b.studyStartDate,
+				b.studyEndDate,
+				b.studyScore studyScore,
+				b.discussCount discussTotalCount,
+				b.examineCount exameCount,
+				b.taskCount paperCount,
+				b.videoCount videoTotalCount,
+				b.discussPercent discussPercent,
+				b.examinPercent,
+				b.videoPercent videoPercent,
+				b.taskPercent paperPercent,
+				b.containVideo containVideo,
+				b.containTask containTask,
+				b.containExamine containExamine,
+				b.containDiscuss containDiscuss,
+				b.passScore passScore,
+				c.videoCount myVideoTotalCount,
+				c.discussCount myDiscussTotalCount,
+				c.state,
+				e.cover_id coverId,
+				e.maxUrl,
+				e.middleUrl,
+				e.name,
+				d.classhour
+	 FROM student_course_rls a
+	 LEFT JOIN open_course_info b ON a.open_id = b.open_id
+	 LEFT JOIN study_course_Info c ON a.id = c.id
+	 LEFT JOIN course_info d ON b.course_id = d.course_id
+	 LEFT JOIN cover_info e ON 	d.cover_id = e.cover_id
+	 WHERE a.student_id = #{studentId} and a.state=1 and b.state=1
+	</select>
+	<resultMap type="com.yz.center.model.vo.StudentCourseVo" id="StudentCourseVoMap">
+		<id column="studentCourseId" property="studentCourseId"/>
+		<result column="openId" property="openId"/>
+		<result column="openCourseName" property="openCourseName"/>
+		<result column="exameStartTime" property="exameStartTime"/>
+		<result column="exameEndTime" property="exameEndTime"/>
+		<result column="discussTotalCount" property="discussTotalCount"/>
+		<result column="studyScore" property="studyScore"/>
+		<result column="exameCount" property="exameCount"/>
+		<result column="videoTotalCount" property="videoTotalCount"/>
+		<result column="paperCount" property="paperCount"/>
+		<result column="examinPercent" property="examinPercent"/>
+		<result column="discussPercent" property="discussPercent"/>
+		<result column="paperPercent" property="paperPercent"/>
+		<result column="videoPercent" property="videoPercent"/>
+		<result column="myVideoTotalCount" property="myVideoTotalCount"/>
+		<result column="myDiscussTotalCount" property="myDiscussTotalCount"/>
+		<result column="classhour" property="classhour"/>
+		<result column="studyStartDate" property="studyStartDate"/>
+		<result column="studyEndDate" property="studyEndDate"/>
+		<result column="containVideo" property="containVideo"/>
+		<result column="containTask" property="containTask"/>
+		<result column="containExamine" property="containExamine"/>
+		<result column="containDiscuss" property="containDiscuss"/>
+		<result column="passScore" property="passScore"/>
+		<result column="state" property="state"/>
+		<association property="coverPo" javaType="com.yz.center.model.po.course.CoverPo">
+			<id column="coverId" property="coverId"/>
+			<result column="maxUrl" property="maxUrl"/>
+			<result column="name" property="name"/>
+			<result column="middleUrl" property="middleUrl"/>
+		</association>
+
+		
+		
+	</resultMap>
+	
+	<!--查询课程下各项考试的分数  -->
+	<select id="findExameTotalScore" parameterType="int" resultType="int">
+	SELECT 
+		totalScore 
+	FROM paper_info 
+	WHERE 
+		open_id=#{openId} and function_id !=1
+	</select>
+	<!--查询课程下面视频的数量  -->
+	<select id="findVideoTotalCount" parameterType="int" resultType="int">
+	SELECT 
+		COUNT(1) 
+	FROM video_info a
+	LEFT JOIN open_course_info b ON a.course_id =b.course_id
+	WHERE 
+		b.open_id=#{openId} 
+	</select>
+	<select id="findPaperTotalScore" parameterType="int" resultType="int">
+	SELECT 
+		totalScore 
+	FROM paper_info 
+	WHERE 
+		open_id=#{openId} and function_id !=2
+	</select>
+	
+	<!--查询课程下我自己的各项考试的分数  -->
+	<select id="findmyExameTotalScore" parameterType="int" resultType="int">
+	SELECT 
+		 a.score
+	FROM student_paper_info a
+	LEFT JOIN paper_info b ON a.paperId = b.paper_id
+	WHERE 
+		a.openCourseId=#{openId} and b.function_id !=1 and a.student_id=#{studentId} and a.isSubmit=1
+	</select>
+	
+	<!--查询课程下我自己的各项作业的分数  -->
+	<select id="findmyPaperTotalScore" parameterType="int" resultType="int">
+	SELECT 
+		 a.score
+	FROM student_paper_info a
+	LEFT JOIN paper_info b ON a.paperId = b.paper_id
+	WHERE 
+		a.openCourseId=#{openId} and b.function_id !=2 and a.student_id=#{studentId} and a.isSubmit=1
+	</select>
+	
+	<select id="findMyinfo" parameterType="int" resultType="com.yz.center.model.vo.StudentForm">
+		SELECT a.avatar,
+		a.`name`,
+		a.number,
+		a.gender,
+		a.birthday birthday2,
+		a.phone,
+		a.email,
+		a.info,
+		d.name className,
+		d.major
+		FROM user_info a
+		LEFT JOIN student_info b ON a.user_id = b.user_id
+		LEFT JOIN student_class_rls c ON b.student_id = c.student_id
+		LEFT JOIN class_info d ON c.class_id = d.class_id
+		WHERE a.user_id = #{userId}
+  	</select>
+  	
+  	<select id="findpageCount" resultType="int">
+	  	SELECT 
+			COUNT(1) 
+		FROM student_course_rls a
+		LEFT JOIN study_course_info b ON a.id=b.id
+		LEFT JOIN student_info c ON a.student_id = c.student_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			a.open_id = #{studentCourseVo2.openId} and a.state !=0
+			<if test="studentCourseVo2.studentNumber != null and studentCourseVo2.studentNumber !=''">
+				and c.number = #{studentCourseVo2.studentNumber}
+			</if>
+			<if test="studentCourseVo2.studentName != null and studentCourseVo2.studentName !=''">
+				and c.name like CONCAT(CONCAT('%', #{studentCourseVo2.studentName}), '%')
+			</if>
+			<if test="studentCourseVo2.MinmyexameGrade != null and studentCourseVo2.MinmyexameGrade != ''">
+				and b.examineGrade &gt;= #{studentCourseVo2.MinmyexameGrade}
+			</if>
+			<if test="studentCourseVo2.MaxmyexameGrade !=null and studentCourseVo2.MaxmyexameGrade !=''">
+				and b.examineGrade &lt;= #{studentCourseVo2.MaxmyexameGrade}
+			</if>
+			<if test="studentCourseVo2.MinvideoCount !=null and studentCourseVo2.MinvideoCount !=''">
+				and b.videoCount &gt;= #{studentCourseVo2.MinvideoCount}
+			</if>
+			<if test="studentCourseVo2.MaxvideoCount !=null and studentCourseVo2.MaxvideoCount !=''">
+				and b.videoCount &lt;= #{studentCourseVo2.MaxvideoCount} 
+			</if>
+		</trim> 
+  	</select>
+  	<select id="studentOfCourseStatistics" resultType="com.yz.center.model.vo.StudentCourseVo2">
+  		SELECT
+  			b.open_id openId,
+			a.number studentNumber,
+			a.name studentName,
+			c.videoCount videoCount,
+			c.examineCount examineCount,
+			c.discussCount discussCount,
+			c.taskCount taskCount,
+			c.finalGrade myFinalGrade,
+			c.examineGrade myexameGrade,
+			d.discussCount oldDiscussCount
+		FROM student_info a
+		LEFT JOIN student_course_rls b ON b.student_id = a.student_id
+		LEFT JOIN study_course_info c ON b.id = c.id
+		LEFT JOIN open_course_info d ON b.open_id = d.open_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			b.open_id = #{studentCourseVo2.openId} and b.state !=0
+			<if test="studentCourseVo2.studentNumber != null and studentCourseVo2.studentNumber !=''">
+				and a.number = #{studentCourseVo2.studentNumber}
+			</if>
+			<if test="studentCourseVo2.studentName != null and studentCourseVo2.studentName !=''">
+				and a.name like CONCAT(CONCAT('%', #{studentCourseVo2.studentName}), '%')
+			</if>
+			<if test="studentCourseVo2.MinmyexameGrade != null and studentCourseVo2.MinmyexameGrade !=''">
+				and c.examineGrade &gt;= #{studentCourseVo2.MinmyexameGrade}
+			</if>
+			<if test="studentCourseVo2.MaxmyexameGrade !=null and studentCourseVo2.MaxmyexameGrade !=''">
+				and c.examineGrade &lt;= #{studentCourseVo2.MaxmyexameGrade}
+			</if>
+			<if test="studentCourseVo2.MinvideoCount !=null and studentCourseVo2.MinvideoCount !=''">
+				and c.videoCount &gt;= #{studentCourseVo2.MinvideoCount}
+			</if>
+			<if test="studentCourseVo2.MaxvideoCount !=null and studentCourseVo2.MaxvideoCount !=''">
+				and c.videoCount &lt;= #{studentCourseVo2.MaxvideoCount} 
+			</if>
+		</trim> 
+		LIMIT #{baseConditionVO.startIndex},#{baseConditionVO.pageSize}
+  	</select>
+  	
+  	<select id="findMycourseProCount" parameterType="int" resultType="int">
+  		SELECT 
+		count(1)
+	 FROM student_course_rls a
+	 LEFT JOIN open_course_info b ON a.open_id = b.open_id
+	 LEFT JOIN study_course_Info c ON a.id = c.id
+	 LEFT JOIN course_info d ON b.course_id = d.course_id
+	 LEFT JOIN cover_info e ON 	d.cover_id = e.cover_id
+	 WHERE a.student_id = #{studentId} and a.state=1 and b.state=1
+  	</select>
+  	<select id="findMycourse2" resultMap="StudentCourseVoMap">
+		SELECT a.id studentCourseId,
+				a.open_id openId, 
+				b.courseName openCourseName,
+				b.examineStartDate exameStartTime,
+				b.examineEndDate exameEndTime,
+				b.studyStartDate,
+				b.studyEndDate,
+				b.studyScore studyScore,
+				b.discussCount discussTotalCount,
+				b.examineCount exameCount,
+				b.taskCount paperCount,
+				b.videoCount videoTotalCount,
+				b.discussPercent discussPercent,
+				b.examinPercent,
+				b.videoPercent videoPercent,
+				b.taskPercent paperPercent,
+				c.videoCount myVideoTotalCount,
+				c.discussCount myDiscussTotalCount,
+				e.cover_id coverId,
+				e.maxUrl,
+				e.middleUrl,
+				e.name,
+				d.classhour
+	 FROM student_course_rls a
+	 LEFT JOIN open_course_info b ON a.open_id = b.open_id
+	 LEFT JOIN study_course_Info c ON a.id = c.id
+	 LEFT JOIN course_info d ON b.course_id = d.course_id
+	 LEFT JOIN cover_info e ON 	d.cover_id = e.cover_id
+	 WHERE a.student_id = #{studentId} and a.state=1 and b.state=1
+	 LIMIT #{baseConditionVO.startIndex},#{baseConditionVO.pageSize}
+	</select>
+	<select id="findmyExameTotalCount" resultType="int">
+		SELECT
+			a.examineCount
+		FROM
+			study_course_info a
+		LEFT JOIN student_course_rls b ON a.studentCourseId = b.id
+		WHERE
+			b.open_id = #{openId}
+		AND b.student_id = #{studentId}
+	</select>
+	
+	<select id="getAllStudentBySchoolId" parameterType="int" resultType="int">
+		SELECT
+			a.user_id
+		FROM
+			student_info a
+		LEFT JOIN user_info b ON a.user_id = b.user_id
+		WHERE b.school_id = #{schoolId} and b.state = 1
+	</select>
+	
+	<select id="findIdByNums" parameterType="Integer" resultType="Integer">
+	SELECT s.student_id 
+	FROM student_info s
+    LEFT JOIN user_info u ON u.user_id=s.user_id
+     WHERE s.number=#{number} and u.school_id=#{schoolId}
+	</select>
+	
+	<update id="updateScore" parameterType="com.yz.center.model.vo.StudentCourseVo">
+		UPDATE
+			study_course_info 
+		SET
+			videoGrade = #{myVideoTotalScore},
+			taskGrade = #{myPaperTotalScore},
+			examineGrade = #{myExameTotalScore},
+			discussGrade = #{myDiscussTotalScore},
+			finalGrade = #{myFinalScore}
+
+		WHERE
+			studentCourseId = #{studentCourseId}
+	</update>
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.log.LogDao">
+
+	<insert id="addLog" parameterType="logPo"  useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO
+			visit_record
+				(
+					type_id,
+					user_id,
+					createDate,
+					state
+				)
+		VALUES(
+				
+				#{typeId},
+				#{userId},
+				#{createDate},
+				#{state}
+			 )
+		
+	</insert>
+	<update id="updateLog" parameterType="logPo">
+	update
+		visit_record
+	set 
+			type_id = #{typeId},
+			user_id=#{userId},
+			createDate=#{createDate},
+			state=#{state}
+	where 
+	 		log_id = #{logId}
+	</update>
+	
+	<select id="getLogByUserId" resultType="logPo">
+			
+			SELECT 
+					log_id logId,
+					type_id typeId,
+					user_id userId,
+					createDate,
+					state
+			FROM
+				visit_record
+			WHERE
+				user_id = #{userId}
+				and
+				type_id = #{type}
+	</select>
+</mapper>

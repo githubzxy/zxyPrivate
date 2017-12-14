@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.resource.ResourceDao">
+	<resultMap type="com.yz.center.model.po.resource.ResourcePo" id="resourcePoMap">
+		<result column="file_id" jdbcType="INTEGER" property="id" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="url" jdbcType="VARCHAR" property="url" />
+		<result column="info" jdbcType="VARCHAR" property="info" />
+		<result column="fileSize" jdbcType="INTEGER" property="fileSize" />
+		<result column="file_suffix" jdbcType="VARCHAR" property="fileSuffix" />
+		<result column="file_type_id" jdbcType="INTEGER" property="fileType" />
+		<result column="down_num" jdbcType="INTEGER" property="downNum" />
+		<result column="schoolId" jdbcType="INTEGER" property="schoolId" />
+		<result column="teacherId" jdbcType="INTEGER" property="teacherId" />
+		<result column="createDate" jdbcType="TIMESTAMP" property="createDate" />
+		<result column="state" jdbcType="INTEGER" property="state" />
+		<association property="fileTypePo" javaType="com.yz.center.model.po.resource.FileType">
+    	    <id property="id" column="file_type_id"/>
+    		<result column="typeName" property="name"/>
+    	</association>
+	</resultMap>
+	<resultMap type="com.yz.center.model.form.FileForm" id="fileFormMap">
+		<result column="file_id" jdbcType="VARCHAR" property="id" />
+		<result column="file_name" jdbcType="VARCHAR" property="name" />
+		<result column="url" jdbcType="VARCHAR" property="url" />
+		<result column="info" jdbcType="VARCHAR" property="info" />
+		<result column="fileSize" jdbcType="INTEGER" property="fileSize" />
+		<result column="file_suffix" jdbcType="VARCHAR" property="fileSuffix" />
+		<result column="file_type_id" jdbcType="INTEGER" property="fileType" />
+		<result column="down_num" jdbcType="INTEGER" property="downNum" />
+		<result column="schoolId" jdbcType="INTEGER" property="schoolId" />
+		<result column="teacherId" jdbcType="INTEGER" property="teacherId" />
+		<result column="createDate" jdbcType="TIMESTAMP" property="createDate" />
+		<result column="state" jdbcType="INTEGER" property="state" />
+		<association property="fileTypePo" javaType="com.yz.center.model.po.resource.FileType">
+    	    <id property="id" column="file_type_id"/>
+    		<result column="name" property="name"/>
+    	</association>
+	</resultMap>
+	
+	<insert id="add" parameterType="com.yz.center.model.form.FileForm" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO 
+			file_info_tmp
+		(
+			file_type_id,
+			file_name,
+			file_suffix,
+			file_size,
+			url,
+			info,
+			schoolId,
+			createDate,
+			create_user_id)
+		VALUES (
+			#{fileType},
+			#{name},
+			#{fileSuffix},
+			#{fileSize},
+			#{url},
+			#{info},
+			#{schoolId},
+			#{createDate},
+			#{creatUserId});
+	</insert>
+	
+	<insert id="addResource" parameterType="com.yz.center.model.form.FileForm" useGeneratedKeys="true" keyProperty="id"> 
+		<choose>
+			<when test="resourceType == 2">
+			INSERT INTO file_info
+				(
+					file_type_id,
+					file_name,
+					file_suffix,
+					file_size,
+					url,
+					info,
+					schoolId,
+					createDate,
+					create_user_id)
+				VALUES (
+					#{fileType},
+					#{name},
+					#{fileSuffix},
+					#{fileSize},
+					#{url},
+					#{info},
+					#{schoolId},
+					#{createDate},
+					#{creatUserId});
+			</when>
+			<otherwise>
+				INSERT INTO chapter_file
+				(
+					file_type_id,
+					file_name,
+					file_suffix,
+					file_size,
+					url,
+					info,
+					chapter_id,
+					course_id,
+					schoolId,
+					createDate,
+					create_user_id)
+				VALUES (
+					#{fileType},
+					#{name},
+					#{fileSuffix},
+					#{fileSize},
+					#{url},
+					#{info},
+					#{chapterId},
+					#{courseId},
+					#{schoolId},
+					#{createDate},
+					#{creatUserId});
+			</otherwise>
+		</choose>
+	</insert>
+	<!-- <update id="updateResource" parameterType="com.yz.center.model.form.FileForm"> 
+		<choose>
+			<when test="resourceType == 2">
+			update file_info SET
+					file_type_id=#{fileType},
+					file_name=#{name},
+					file_suffix=#{fileSuffix},
+					file_size=#{fileSize},
+					url=#{url},
+					info=#{info},
+					create_user_id=#{creatUserId}
+			</when>
+			<otherwise>
+				update chapter_file SET
+					file_type_id=#{fileType},
+					file_name=#{name},
+					file_suffix=#{fileSuffix},
+					file_size=#{fileSize},
+					url=#{url},
+					info=#{info},
+					chapter_id=#{chapterId},
+					course_id=#{courseId},
+					#{creatUserId}
+			</otherwise>
+		</choose>
+	</update> -->
+	<insert id="addResType" parameterType="resourceTypePo" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO 
+			resource_type
+		(
+			name,
+			code,
+			info,
+			create_date)
+		VALUES (
+			#{name},
+			#{code},
+			#{info},
+			#{createDt});
+	</insert>
+	<!-- 添加封面 -->
+	<insert id="addCover" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO 
+			cover_info
+		(
+			name,
+			maxUrl,
+			middleUrl,
+			minUrl,
+			schoolId,
+			createDate)
+		VALUES (
+			#{name},
+			#{url},
+			#{middleUrl},
+			#{minUrl},
+			#{schoolId},
+			#{createDate});
+	</insert>
+	<!-- 添加封面 -->
+	<update id="updateCover" >
+		UPDATE cover_info SET
+			name=#{name},
+			maxUrl=#{url},
+			middleUrl=#{middleUrl},
+			minUrl=#{minUrl},
+			schoolId=#{schoolId}
+			WHERE cover_id = #{coverId}
+			
+	</update>
+	
+	
+	<!-- 添加video  -->
+	<insert id="addVideo" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO
+			video_info
+		(
+			chapter_id,
+			course_id,
+			name,
+			url,
+			sort,
+			info,
+			user_id,
+			school_id,
+			video_size,
+			second,
+			video_suffix,
+			create_dt,
+			state_dt)
+		VALUES (
+			#{chapterId},
+			#{courseId},
+			#{name},
+			#{url},
+			#{sort},
+			#{info},
+			#{creatUserId},
+			#{schoolId},
+			#{fileSize},
+			#{videoSecond},
+			#{fileSuffix},
+			#{createDate},
+			#{stateDate});
+	</insert>
+	<!-- 修改video -->
+	<update id="updateVideo" parameterType="com.yz.center.model.form.FileForm">
+		UPDATE video_info SET
+			chapter_id=#{chapterId},
+			course_id=#{courseId},
+			name=#{name},
+			url=#{url},
+			info=#{info},
+			user_id=#{creatUserId},
+			video_suffix=#{fileSuffix}
+	  WHERE video_id = #{videoId}		
+	</update>
+	<select id="getResourceList" parameterType="pageBean" resultMap="resourcePoMap">
+		SELECT 
+			a.file_id,
+			a.file_name name,
+			a.url,
+			a.createDate,
+			a.state,
+			b.name typeName
+		 FROM file_info a 
+		LEFT JOIN file_type b ON a.file_type_id = b.file_type_id 
+		WHERE a.schoolId = #{schoolId}
+		<if test="keyWords != null and keyWords !=''">		
+			AND a.file_name LIKE CONCAT('%',#{keyWords},'%')
+		</if>
+		<choose>
+		<when test="userId != null">
+			AND a.create_user_id = #{userId} and a.state &gt; 0
+		</when>
+		<otherwise>
+			AND a.state &gt; 1
+		</otherwise>
+		</choose>
+		limit #{startIndex},#{pageSize}
+	</select>
+	
+	<!-- 查询章节下文件 -->
+	<select id="getFileByChapterId" parameterType="Integer" resultMap="resourcePoMap">
+		SELECT
+			a.file_id,
+			a.file_name name,
+			a.url url,
+			a.createDate createDate,
+			a.state state
+		FROM 
+			chapter_file a
+		WHERE 
+			a.chapter_id = #{chapterId}
+	</select>
+	
+	<select id="getCResourceList" parameterType="pageBean" resultMap="resourcePoMap">
+		SELECT 
+			a.file_id,
+			a.file_name name,
+			a.url url,
+			a.createDate createDate,
+			a.state state,
+			b.name typeName
+			 FROM chapter_file a 
+		LEFT JOIN file_type b ON a.file_type_id = b.file_type_id 
+		WHERE a.schoolId = 1
+		<if test="keyWords != null and keyWords !=''">
+				AND a.file_name LIKE CONCAT('%',#{keyWords},'%')
+			</if>
+		<if test="courseId != null and courseId !=''">
+			AND a.course_id =  #{courseId}
+		</if>
+		<choose>
+		<when test="userId != null">
+			AND a.create_user_id = #{userId} and a.state &gt; 0
+		</when>
+		<otherwise>
+			AND a.state &gt; 1
+		</otherwise>
+		</choose>
+		limit #{startIndex},#{pageSize}
+	</select>
+	
+	<select id="getTypeList" resultType="resourceTypePo" parameterType="pageBean">
+		SELECT resource_id id,name name,code code,info info,create_date createDt
+		 FROM resource_type  a WHERE a.state=1 
+		 <if test="keyWords != null and keyWords !=''">
+				AND a.name LIKE CONCAT('%',#{keyWords},'%')
+		</if>
+		limit #{startIndex},#{pageSize}
+	</select>
+	
+	<!-- 查询所有资源 -->
+	<select id="getAllResource" resultMap="resourcePoMap">
+		SELECT a.file_id,
+			a.file_name name,
+			a.file_type_id fileTypeId,
+			a.url url,
+			a.createDate createDate,
+			b.file_type_id fileTypeId,
+			b.name typeName
+		 FROM file_info a
+		 LEFT JOIN file_type b ON a.file_type_id = b.file_type_id
+		 where a.state = 2
+	</select>
+	
+	<select id="countItems" parameterType="pageBean" resultType="Integer">
+    SELECT COUNT(1) from file_info a
+    where a.schoolId = #{schoolId}
+    <if test="keyWords != null and keyWords !=''">		
+		AND a.file_name LIKE CONCAT('%',#{keyWords},'%')
+	</if>
+	<choose>
+		<when test="userId != null and userId !=''">
+			AND a.create_user_id = #{userId} and a.state &gt; 0
+		</when>
+		<otherwise>
+			AND a.state &gt; 1
+		</otherwise>
+		</choose>
+    </select>
+    
+    <select id="countCItems" parameterType="pageBean" resultType="Integer">
+    SELECT COUNT(1) from chapter_file a
+    where a.schoolId=#{schoolId}
+    <if test="keyWords != null and keyWords !=''">		
+		AND a.file_name LIKE CONCAT('%',#{keyWords},'%')
+	</if>
+	<if test="courseId != null and courseId !=''">
+			AND a.course_id =  #{courseId}
+		</if>
+	<choose>
+		<when test="userId != null and userId !=''">
+			AND a.create_user_id = #{userId} and a.state &gt; 0
+		</when>
+		<otherwise>
+			AND a.state &gt; 1
+		</otherwise>
+		</choose>
+    </select>
+    
+    <select id="getTypeNum" resultType="Integer" parameterType="pageBean">
+    SELECT COUNT(1) from resource_type a  WHERE a.state=1 
+     <if test="keyWords != null and keyWords !=''">
+				AND a.name LIKE CONCAT('%',#{keyWords},'%')
+		</if>
+    </select>
+    
+    <update id="delResource">
+      UPDATE 
+      <choose>
+			<when test="fileType != null">
+				chapter_file a
+			</when>
+			<otherwise>
+				file_info a
+			</otherwise>
+		</choose>
+		 SET a.state=0 WHERE a.file_id=#{fileId}
+    </update>
+    
+    <update id="delResourceType" parameterType="Integer" >
+      UPDATE resource_type a SET a.state=0 WHERE a.resource_id=#{id}
+    </update>
+     <update id="delAllResourceType" parameterType="Integer" >
+      UPDATE resource_type a SET a.state=0 WHERE a.resource_id in (${fileTypeIds}) 
+    </update>
+    <!-- 修改资源类别 -->
+    <update id="updateRestype" parameterType="resourceTypePo" >
+      UPDATE resource_type a SET a.name=#{name},a.code=#{code},a.info=#{info} WHERE a.resource_id=#{id}
+    </update>
+    
+    <update id="updatecheckState">
+      UPDATE 
+      <choose>
+			<when test="fileType != null">
+				chapter_file a
+			</when>
+			<otherwise>
+				file_info a
+			</otherwise>
+		</choose>
+		SET a.state=#{state} WHERE a.file_id=#{fileId}
+    </update>
+    
+    <update id="setClickNum">
+      UPDATE 
+      <choose>
+			<when test="resourceType == 2">
+				file_info a
+			</when>
+			<otherwise>
+				chapter_file a
+			</otherwise>
+		</choose>
+		SET a.down_num=#{downNum}
+    </update>
+    
+    <select id="getResourceTypeById" resultType="resourceTypePo">
+		SELECT resource_id id,name name,code code,info info,create_date createDt
+		 FROM resource_type
+		 where resource_id=#{id}
+	</select>
+	
+	<select id="getResourceById" resultMap="fileFormMap">
+	<choose>
+			<when test="typeId == 2">
+			SELECT *
+				 FROM file_info
+		 		where file_id=#{fileId}
+			</when>
+			<otherwise>
+				SELECT *
+					 FROM chapter_file
+		 			where file_id=#{fileId}
+			</otherwise>
+	</choose>
+	</select>
+	
+	<select id="getTmpFileById" resultMap="fileFormMap">
+		SELECT *
+		 FROM file_info_tmp
+		 where file_id=#{id}
+	</select>
+	
+	<!-- 查询视频最大排序编号 -->
+	<select id="selectVideoMaxSort" resultType="int">
+		SELECT 
+			COUNT(a.sort)+1 sort 
+		FROM 
+			video_info a 
+		WHERE 
+			a.course_id = #{courseId} AND a.state = 1
+	</select>
+	
+	<delete id="delChaptervideo">
+		delete from video_info where chapter_id = #{chapterId}
+	</delete>
+	
+	<delete id="delChapterFile">
+		delete from chapter_file where chapter_id = #{chapterId}
+	</delete>
+	
+	<!-- 根据资源ID获取资源 -->
+	<select id="getFileByFileIds" resultType="com.yz.center.model.form.FileForm">
+		SELECT 
+			a.file_name name,
+			a.url
+		FROM 
+			file_info a
+		WHERE a.file_id IN 
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	<select id="getFilesById" parameterType="int" resultType="int">
+		SELECT
+			file_id
+		FROM
+			chapter_file
+		WHERE
+			file_id = #{id}
+	</select>
+	
+	<!-- 根据资源ID获取资源 -->
+	<select id="getCourseFileByFileIds" resultType="com.yz.center.model.form.FileForm">
+		SELECT 
+			a.file_name name,
+			a.url
+		FROM 
+			chapter_file a
+		WHERE a.file_id IN 
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+</mapper>

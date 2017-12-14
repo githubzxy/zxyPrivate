@@ -215,9 +215,9 @@ input.input-text{border: 1px solid #c3c3c3;padding: 1px 3px 1px 30px;border-radi
 .video_header_center .span1 {color:#58889f;}
 .video_header_center .span2 {color:#d9d9d9;}
 .video_main{width:100%;overflow:hidden;}
-.video_wrap_play{width:100%;float:left;background:#000;height:650px;}
-.video_wrap_play .w1200{width:1200px;height:650px;margin:0 auto;overflow:hidden;}
-.video_wrap_play #yazhuoVideo{width:900px;float:left;height:650px;background:url(../images/startt.png) no-repeat center;}
+.video_wrap_play{width:100%;float:left;background:#000;height:530px;}
+.video_wrap_play .w1200{width:1200px;height:530px;margin:0 auto;overflow:hidden;}
+.video_wrap_play #yazhuoVideo{width:900px;float:left;height:530px;background:url(../images/startt.png) no-repeat center;}
 .yazhuo_study_video_discuss{padding-top:40px;clear:both;min-height:350px;overflow:hidden;}
 .yazhuo_discuss_video{width:900px;min-height:300px;padding-bottom:20px;margin-left:2px;}
 .yazhuo_textarea{width:880px;margin:10px auto;}
@@ -420,7 +420,8 @@ input.input-text1{border: 1px solid #c3c3c3;padding: 1px 3px 1px 30px;border-rad
 .courseCategories_mian_bottom  a.course_item{width:280px!important;height:160px!important;}
 .courseCategories_mian_bottom  a.course_item img {width:280px!important;height:160px!important;}
 .courseCategories_mian_bottom .shadow {width:280px!important;}
-
+/*学校logo水印2017.12.06**/
+.school_logo{height:52px;width:180px;background:url(../images/school_logo.png) no-repeat center;position:absolute;top:10px;left:5px;z-index:999888999}
 
 
 

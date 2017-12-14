@@ -49,6 +49,9 @@
 <div class="video_main">
   <div class="video_wrap_play">
    <div class="w1200">
+   <!-- 学校logo水印 -->
+     <div class="school_logo"></div>
+     <!-- 学校logo水印 -->
      <div id="yazhuoVideo"> 
      </div> 
      <div class="video_list_course">
@@ -268,7 +271,7 @@
       	    flashplayer: "${res}/plugin/jwPlayer/jwplayer.swf",	
       	    file:urlAddr,
       	    autostart : true , 
-      	    height: "650px",
+      	    height: "530px",
       	    width: "900px",
       	    volume: 80,
       	    image: "${res}/front/images/start.png",

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.role.RoleDao">
+	<!-- 添加角色 -->
+	<insert id="insertRole" parameterType="rolePo">
+		INSERT INTO role_info (role_id,role_name,roleCode)VALUES(#{roleId},#{roleName},#{roleCode})
+	</insert>
+	
+	<!-- 修改角色 -->
+	<update id="updateRole" parameterType="rolePo">
+		UPDATE role_info SET role_name = #{roleName},roleCode=#{roleCode} WHERE role_id = #{roleId}
+	</update>
+	
+	<!-- 根据角色ID查询角色信息 -->
+	<select id="selectRoleById" parameterType="string" resultType="rolePo">
+		SELECT * FROM role_info WHERE role_id = #{roleId};
+	</select>
+	
+	<!-- 查询角色总数 -->
+	<select id="selectRoleCount" resultType="int">
+		SELECT count(1) FROM role_info
+	</select>
+	
+	<!-- 分页查询角色列表 -->
+	<select id="selectRoles" parameterType="pageBean" resultType="rolePo">
+		SELECT * FROM role_info where isDefault = 0 LIMIT #{startIndex},#{pageSize}
+	</select>
+	
+	<!-- 查询所有的角色 -->
+	<select id="selectAllRoles" resultType="rolePo">
+		SELECT * FROM role_info where isDefault = 0
+	</select>
+	
+	<update id="updateUserRoleId">
+		UPDATE 
+			user_info a, login_info b ,teacher_info c 
+		SET 
+			a.roleCode = #{roleId},b.roleCode = #{roleId},c.roleCode=#{roleId} 
+		WHERE 
+			a.loginId = b.login_id AND a.user_id = c.user_id AND b.login_id  = c.login_id AND a.user_id = #{userId}
+	</update>
+	<select id="selectListTree" resultMap ="baseControllerMap">
+		SELECT
+			a.id id1,
+			a.parentId parentId1,
+			a.con_name conName1,
+			b.id id2,
+			b.parentId parentId2,
+			b.con_name conName2,
+			c.id id3,
+			c.parentId parentId3,
+			c.con_name conName3,
+		  	d.id id4,
+			d.parentId parentId4,
+			d.con_name conName4
+		FROM
+			base_controller_info a
+		LEFT JOIN base_controller_info b ON a.id = b.parentId
+		LEFT JOIN base_controller_info c ON b.id = c.parentId
+		LEFT JOIN base_controller_info d ON c.id = d.parentId
+		WHERE a.parentId = 0
+	</select>
+	<resultMap type="baseControllerPo" id="baseControllerMap">
+		<id column="id1" property="id"/>
+		<result column="parentId1" property="parentId"/>
+		<result column="conName1" property="conName"/>
+		<collection property="children" ofType="baseControllerPo">
+			<id column="id2" property="id"/>
+			<result column="parentId2" property="parentId"/>
+			<result column="conName2" property="conName"/>
+			<collection property="children" ofType="baseControllerPo">
+				<id column="id3" property="id"/>
+				<result column="parentId3" property="parentId"/>
+				<result column="conName3" property="conName"/>
+				<collection property="children" ofType="baseControllerPo">
+					<id column="id4" property="id"/>
+					<result column="parentId4" property="parentId"/>
+					<result column="conName4" property="conName"/>
+				</collection>
+			</collection>
+		</collection>
+	</resultMap>
+	<select id="selectHaveController" resultType="int">
+		select count(1) from base_role_controller where roleId = #{roleId} and controllerId=#{controllerId}
+	</select>
+	<delete id="deleteRoleController">
+		delete from base_role_controller where roleId=#{roleId} and controllerId not in 
+		<foreach collection="controllerId" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<insert id="addRoleController">
+		insert into base_role_controller(roleId,controllerId) values(#{roleId},#{controllerId})
+	</insert>
+	
+	<select id="findMyroles" parameterType="string" resultType="userPo">
+		SELECT
+			roleCode
+		FROM
+			user_info
+		WHERE
+			user_id = #{id}
+	</select>
+</mapper>

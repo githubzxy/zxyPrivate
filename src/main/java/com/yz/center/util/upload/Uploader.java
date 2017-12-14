@@ -7,6 +7,15 @@ import org.apache.commons.fileupload.*;
 import org.apache.commons.fileupload.FileUploadBase.InvalidContentTypeException;
 import org.apache.commons.fileupload.FileUploadBase.SizeLimitExceededException;
 import org.apache.commons.fileupload.util.*;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+
+import com.yz.center.util.CommonUtil;
+import com.yz.center.util.CommonUtil3;
+import com.yz.center.util.ftp.FtpTools;
+
 import org.apache.commons.fileupload.servlet.*;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -60,7 +69,7 @@ public class Uploader {
 
 	}
 
-	public void upload() throws Exception {
+	/*public void upload() throws Exception {
 		boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
 		if (!isMultipart) {
 			this.state = this.errorInfo.get("NOFILE");
@@ -121,7 +130,51 @@ public class Uploader {
 		} catch (Exception e) {
 			this.state = this.errorInfo.get("UNKNOWN");
 		}
-	}
+	}*/
+	
+	
+	public void upload() throws Exception
+	      {
+	         boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
+	          if (!isMultipart)
+	          {
+	              this.state = this.errorInfo.get("NOFILE");
+	              return;
+	          }
+	         try
+	         {
+	             MultipartResolver resolver = new CommonsMultipartResolver(
+	                     this.request.getSession().getServletContext());
+	             MultipartHttpServletRequest multipartRequest = resolver.resolveMultipart(request);
+	             CommonsMultipartFile orginalFile = (CommonsMultipartFile) multipartRequest.getFile("upfile");
+	             
+	             this.originalName = orginalFile.getOriginalFilename();
+	             if (!this.checkFileType(this.originalName))
+	             {
+	                 this.state = this.errorInfo.get("TYPE");
+	                 return;
+	             }
+	             this.type = this.getFileExt(this.originalName);
+	             this.size = orginalFile.getSize();
+	             this.fileName=CommonUtil3.add(orginalFile, "/notice", multipartRequest, 0);
+	             this.url =this.fileName;
+	             this.state = this.errorInfo.get("SUCCESS");
+	             // 这里是公司内部上传到阿里云服务器的工具类
+	             /*String key = ImgUtils.uploadImage("xxxx",
+	                     ImageKind.Picture,
+	                     orginalFile.getInputStream(),
+	                     this.size);
+	             
+	             this.fileName = key;
+	            this.url = "http://xxx.aliyuncs.com/" + key;
+	             this.state = this.errorInfo.get("SUCCESS");*/
+	        }
+	         catch (Exception e)
+         {
+	            this.state = this.errorInfo.get("UNKNOWN");
+	        }
+     }
+	
 
 	/**
 	 * 接受并保存以base64格式上传的文件

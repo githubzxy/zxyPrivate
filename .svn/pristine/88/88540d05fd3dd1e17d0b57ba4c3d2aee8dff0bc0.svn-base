@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.paper.PaperDao">
+    <select id="getPaperById" parameterType="pageBean" resultMap="resultPaperList">
+	SELECT
+	p.title,p.paper_id,p.subjectNum,p.teacher_id,uf.`name`,p.createDate
+	FROM paper_info p
+	LEFT JOIN teacher_info tf ON p.teacher_id=tf.teacher_id
+	LEFT JOIN user_info uf ON uf.user_id=tf.user_id WHERE p.state=1
+	<if test="videoId != null and videoId != ''">
+	 AND p.video_id=#{videoId}
+    </if>
+	<if test="params.functionId != null and params.functionId != ''">
+	 AND p.function_id in (${params.functionId},3)
+	</if>
+	<if test="openId != null and openId != ''">
+	 AND p.open_id=#{openId}
+	</if>
+	<if test="schoolId != null and schoolId != ''">
+	 AND p.schoolId=#{schoolId}
+	</if>
+	limit #{startIndex},#{pageSize}
+	</select>
+	 <select id="getPaperCounts" parameterType="pageBean" resultType="Integer">
+	SELECT count(1) FROM paper_info p WHERE p.state=1
+	<if test="videoId != null and videoId != ''">
+	 AND p.video_id=#{videoId}
+    </if>
+	<if test="params.functionId != null and params.functionId != ''">
+	 AND p.function_id in (${params.functionId},3)
+	</if>
+	<if test="openId != null and openId != ''">
+	 AND p.open_id=#{openId}
+	</if>
+	<if test="schoolId != null and schoolId != ''">
+	 AND p.schoolId=#{schoolId}
+	</if>
+	</select>
+	<resultMap type="paperPo" id="resultPaperList">
+		<id column="paper_id" property="paperId" />
+		<result column="title" property="title" />
+		<result column="subjectNum" property="subjectNum" />
+		<result column="teacher_id" property="teacherId" />
+		<result column="createDate" property="creDt" />
+		<association property="teacherPo"  javaType="teacherPo">
+			<id column="teacher_id" property="teacherId" />
+			<association property="userPo" javaType="userPo">
+        	<id column="user_id" property="userId"/>
+        	<result column="name" property="name"/>
+        </association>
+		</association>
+		
+		
+	</resultMap>		
+</mapper>

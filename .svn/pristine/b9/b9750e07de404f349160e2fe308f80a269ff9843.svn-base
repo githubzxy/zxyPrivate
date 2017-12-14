@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.course.CourseDao">
+
+
+	<select id="findCourseNameAllBySchoolId" parameterType="int"
+		resultType="coursePo">
+		SELECT
+		course_id courseId,
+		course_name courseName
+		FROM course_info WHERE state=1 and school_id = #{schoolId}
+	</select>
+
+	<select id="findCourseNameByTypeId" parameterType="int"
+		resultType="coursePo">
+		SELECT 
+			course_id courseId,
+			course_name courseName
+		 FROM course_info WHERE course_type_id = #{typeId}
+	</select>
+	<!-- 添加课程第一步 -->
+	<insert id="addStepOne" useGeneratedKeys="true" keyProperty="courseId" parameterType="com.yz.center.model.form.CourseForm">
+		INSERT INTO
+		course_info
+		(
+		course_type_id,
+		create_user_id,
+		course_info,
+		course_name,
+		classhour,
+		school_id,
+		createDate,
+		updateDate,
+		cover_id
+		)
+		VALUES (
+		#{courseTypeId},
+		#{createUserId},
+		#{courseInfo},
+		#{courseName},
+		#{classhour},
+		#{schoolId},
+		#{createDt},
+		#{updateDt},
+		#{coverId}	
+		)
+		 <selectKey keyProperty="courseId" resultType="int" order="AFTER">  
+          select LAST_INSERT_ID()   
+      </selectKey> 
+	</insert>
+	
+	<!-- 添加课程讲师 -->
+	<insert id="addCourseLecture" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO 
+			course_lecturer_rls
+		(
+			course_id,
+			lecturer_id)
+		VALUES (
+			#{courseId},
+			#{lecturerId});
+	</insert>
+	
+	<!-- 修改课程信息 -->
+    <update id="updateCourseInfo">
+    	UPDATE 
+    		course_info
+    	SET 
+    	<if test="courseTypeId != null and courseTypeId != ''">
+	    	course_type_id=#{courseTypeId},
+	    </if>
+			course_info=#{courseInfo},
+			course_name=#{courseName},
+			classhour=#{classhour},
+			<if test="coverId != null and coverId != ''">
+				cover_id=#{coverId},
+			</if>
+			updateDate=#{updateDt}
+    	WHERE 
+    		course_id = #{courseId}
+    </update>
+    <update id="updateVideoCount">
+	UPDATE open_course_info o SET o.videoCount=(SELECT COUNT(1) FROM
+	video_info vf WHERE vf.state=1 AND vf.course_id=#{courseId}) WHERE 
+	o.course_id=#{courseId}
+    </update>
+   
+	<select id="getCourseAllBySchoolId" resultType="coursePo">
+		SELECT * FROM course_info WHERE school_id = #{schoolId}
+	</select>
+	
+	<!-- 通过课程id获取课程 -->
+	<select id="getCourseByCourseId" parameterType="integer" resultMap="coursePoMap1">
+		SELECT 
+			a.course_id courseId,
+			a.course_name courseName,
+			a.classhour classhour,
+			a.course_info courseInfo,
+			a.cover_id coverId,
+			a.course_type_id,
+			c.lecturer_id lecturerId,
+			c.name,
+			c.position position,
+			d.cover_id id,
+			d.name coverName,
+			d.maxUrl maxUrl
+		FROM course_info a
+		LEFT JOIN course_lecturer_rls b INNER JOIN lecturer_info c ON b.lecturer_id = c.lecturer_id ON a.course_id=b.course_id
+		LEFT JOIN cover_info d ON a.cover_id = d.cover_id
+		WHERE a.course_id = #{courseId}
+	</select>
+
+<!-- 通过课程类型获取课程 -->
+	<select id="findCourseByTypeId" parameterType="Integer" resultMap="coursePoMap">
+		SELECT 
+			* 
+		FROM 
+			course_info 
+		WHERE 
+			course_type_id = #{courseTypeId}
+	</select>
+	
+  <!-- 修改课程类别信息 -->
+    <update id="changeCourseType">
+    	UPDATE 
+    		course_info
+    	SET 
+    		course_type_id=#{courseTypeId}
+	
+    	WHERE 
+    		course_id = #{courseId}
+    </update>
+    
+ <!-- 修改课程类别信息 -->
+    <update id="delCourse">
+    	UPDATE 
+    		course_info a
+    	SET 
+    		a.state=0
+	
+    	WHERE 
+    		course_id = #{courseId}
+    </update>
+    <!-- 删除封面 -->
+    <delete id="delCover">
+    	delete from cover_info where cover_id = #{coverId}
+    </delete>
+    <update id="delCourseCover">
+    	update 
+    		course_info a
+    	SET
+    		a.cover_id = null
+    	where a.course_id=#{courseId}
+    </update>
+	<!-- 查询课程总数 -->
+	<select id="selectCourseCount" resultType="int">
+		SELECT COUNT(1) FROM course_info a
+		where a.state = 1 and a.school_id=#{schoolId}
+		<if test="keyWords != null and keyWords !=''">
+				AND a.course_name LIKE CONCAT('%',#{keyWords},'%')
+		</if>
+	</select>
+    
+    
+    <!-- 分页查询课程 -->
+    <select id="selectCourseList" resultMap="coursePoMap" >
+    	SELECT 
+			a.course_id courseId,
+			a.course_name courseName,
+			a.course_info courseInfo,
+			a.createDate createDate,
+			a.updateDate updateDate,
+			a.classhour,
+			b.user_id userId,
+			b.name,
+			c.course_type_id courseTypeId,
+			c.type_name typeName
+		FROM
+			course_info a
+		LEFT JOIN user_info b ON a.create_user_id = b.user_id 
+		LEFT JOIN course_type c ON a.course_type_id = c.course_type_id
+		where a.state = 1 and a.school_id=#{schoolId}
+		<if test="keyWords != null and keyWords !=''">
+				AND a.course_name LIKE CONCAT('%',#{keyWords},'%')
+		</if>
+		order by a.course_id desc
+		limit #{startIndex},#{pageSize}
+		
+    </select>
+
+	<!-- 查询课程信息 -->
+	<select id="getCourseInfo" resultType="courseInfoForm">
+	SELECT c.course_id,c.classhour,c.course_info,cfo.courseName,cpe.type_name,cfo.open_id
+	,count(scr.student_id) count ,ci.middleUrl cover,ci.maxUrl
+	FROM
+	course_info c
+	LEFT JOIN course_type cpe ON c.course_type_id=cpe.course_type_id
+	LEFT JOIN student_course_rls scr ON scr.open_id=c.course_id
+    LEFT JOIN open_course_info cfo ON cfo.course_id=c.course_id
+    LEFT JOIN cover_info ci ON ci.cover_id = c.cover_id
+	WHERE cfo.open_id=#{openId} and c.state = 1
+	GROUP BY scr.student_id
+	</select>
+
+
+	<!-- 查询所有课程 -->
+    <select id="selectAllCourseList" resultMap="coursePoMap">
+    	SELECT 
+			a.course_id courseId,
+			a.course_name courseName,
+			a.course_info courseInfo
+		FROM
+			course_info a
+		where a.state = 1 and a.school_id=1
+    </select>
+    
+    <resultMap type="coursePo" id="coursePoMap">
+		<result column="courseId" jdbcType="INTEGER" property="courseId" />
+		<result column="courseName" jdbcType="VARCHAR" property="courseName" />
+		<result column="courseInfo" jdbcType="VARCHAR" property="courseInfo" />
+		<result column="classhour" jdbcType="INTEGER" property="classhour" />
+		<result column="click_num" jdbcType="INTEGER" property="clickNum" />
+		<result column="createDate" jdbcType="TIMESTAMP" property="createDt" />
+		<result column="updateDate" jdbcType="TIMESTAMP" property="updateDt" />
+		<association property="createUser" javaType="userPo">
+    	    <id property="userId" column="userId"/>
+    		<result column="name" property="name"/>
+    	</association>
+        <association property="courseTypePo" javaType="courseTypePo">
+    		<id column="courseTypeId" property="courseTypeId"/>
+    		<result column="typeName" property="typeName"/>
+    	</association>
+    </resultMap>
+    
+	<resultMap type="coursePo" id="coursePoMap1">
+		<result column="courseId" jdbcType="INTEGER" property="courseId" />
+		<result column="courseName" jdbcType="VARCHAR" property="courseName" />
+		<result column="courseInfo" jdbcType="VARCHAR" property="courseInfo" />
+		<result column="classhour" jdbcType="INTEGER" property="classhour" />
+		<result column="createDate" jdbcType="TIMESTAMP" property="createDt" />
+		<result column="coverId" jdbcType="INTEGER" property="coverId" />
+		<result column="course_type_id" jdbcType="INTEGER" property="courseTypeId" />
+		<association property="cover" javaType="com.yz.center.model.po.course.CoverPo">
+    		<id column="coverId" property="coverId"/>
+    		<result column="maxUrl" property="maxUrl"/>
+    		<result column="coverName" property="name"/>
+    	</association>
+    	
+        <collection property="lecturerPo" ofType="com.yz.center.model.po.course.LecturerPo">
+    		<id column="lecturerId" property="lecturerId"/>
+    		<result column="name" property="name"/>
+    		<result column="position" property="position"/>
+    	</collection>
+	</resultMap>
+	
+	<update id="updateDtByCourseId">
+    	UPDATE 
+    		course_info
+    	SET    	
+			updateDate=now()
+    	WHERE 
+    		course_id = #{courseId}
+    </update>
+	
+	
+</mapper>

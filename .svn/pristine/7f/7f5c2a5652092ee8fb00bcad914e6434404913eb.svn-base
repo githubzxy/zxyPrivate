@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.discuss.DiscussDao">
+	<!--我的讨论查询  -->
+	<select id="selecPageCount" parameterType="com.yz.center.model.vo.BaseConditionVO" resultType="int">
+		SELECT 
+			COUNT(1) 
+		FROM
+		 	discuss_info
+		WHERE
+			user_id = #{userId} 
+	</select>
+	
+	<select id="findmydiscuss" parameterType="com.yz.center.model.vo.BaseConditionVO" resultMap="discussMap">
+		SELECT
+			a.user_id userId,
+			a.discuss_id discussId,
+			b.theme_id themeId,
+			b.title,
+			a.content,
+			b.createDate createDate
+		FROM discuss_info a
+		LEFT JOIN discuss_theme_info b ON a.theme_id = b.theme_id
+		WHERE a.user_id = #{userId}
+		ORDER BY
+    		b.createDate
+		DESC 
+		LIMIT  #{startIndex},#{pageSize}
+	</select>
+	<resultMap type="com.yz.center.model.po.discuss.DiscussPo" id="discussMap">
+		<id column="discussId" property="discussId"/>
+		<result column="userId" property="userId"/>
+		<result column="content" property="content"/>
+		<association property="discussThemePo" javaType="com.yz.center.model.po.discuss.DiscussThemePo">
+			<id column="themeId" property="themeId"/>
+			<result column="title" property="title"/>
+			<result column="createDate" property="createDate"/>
+		</association>
+	</resultMap>
+	<!--  -->
+	<!-- 讨论中心查询 -->
+	<select id="selecPageCount2" parameterType="com.yz.center.model.vo.BaseConditionVO" resultType="int">
+		SELECT 
+			COUNT(1) 
+		FROM
+		 	discuss_theme_info x
+		 	LEFT JOIN open_course_info b ON x.open_id = b.open_id
+			LEFT JOIN student_course_rls c ON c.open_id = b.open_id				
+			LEFT JOIN student_info d ON c.student_id = d.student_id
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			x.isEnable = 1 AND  d.user_id = #{userId} AND c.state=1
+			<if test="id != null and id !=''">
+				and b.open_id =#{id}
+			</if>
+		
+		</trim>
+			
+	</select>
+	
+	<select id="findAllDiscuss" parameterType="com.yz.center.model.vo.BaseConditionVO" resultMap="discussVoMap">
+		
+		SELECT
+			b.theme_id themeId,
+			b.title,
+			c.open_id openId,
+			c.courseName,
+			a.discuss_id discussId,
+			a.content,
+			a.createDate nextCreateDate
+			FROM
+				discuss_info a
+			INNER JOIN discuss_theme_info b ON a.theme_id = b.theme_id
+			INNER JOIN open_course_info c ON b.open_id = c.open_id
+			WHERE a.user_id = #{userId}
+			ORDER BY a.createDate DESC
+			LIMIT #{startIndex},#{pageSize}
+	</select>
+	<select id="findAllDiscussBythemeId" resultMap="discussVoMap">
+		SELECT
+			a.theme_id themeId,
+			a.title title,
+			a.createDate,
+			b.open_id openId,
+			b.courseName,
+			c.discuss_id discussId,
+			c.content,
+			c.createDate nextCreateDate
+		FROM
+			(SELECT  * FROM discuss_theme_info x WHERE x.isEnable = 1 
+			AND x.theme_id = #{themeId}
+			) as a
+		LEFT JOIN open_course_info b ON a.open_id = b.open_id
+		LEFT JOIN discuss_info c ON a.theme_id = c.theme_id
+		ORDER BY c.createDate DESC
+		LIMIT 0,#{baseConditionVO.endIndex}
+	</select>
+	<select id="findDiscussBythemeId" resultType="com.yz.center.model.po.discuss.DiscussPo">
+	SELECT
+	c.discuss_id discussId,
+	c.content content,
+	c.createDate createDate,
+	u.avatar avatar
+	FROM
+	discuss_info c
+	LEFT JOIN user_info u ON c.user_id=u.user_id
+	WHERE
+	c.theme_id = #{themeId}
+	ORDER BY c.createDate DESC
+	LIMIT 0,#{baseConditionVO.endIndex}
+	</select>
+	<select id="findDiscussTheme" parameterType="com.yz.center.model.vo.BaseConditionVO" resultMap="discussVoMap">
+			SELECT
+					x.theme_id themeId,
+					x.title,
+					x.createDate,
+					x.isTop isTop,
+					b.open_id openId,
+					b.courseName,
+			        ci.maxUrl
+			FROM
+					discuss_theme_info x
+			LEFT JOIN open_course_info b ON x.open_id = b.open_id
+			LEFT JOIN student_course_rls c ON c.open_id = b.open_id				
+			LEFT JOIN student_info d ON c.student_id = d.student_id
+      LEFT JOIN course_info cf ON cf.course_id=b.course_id
+      LEFT JOIN cover_info ci ON ci.cover_id=cf.cover_id
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				x.isEnable = 1 AND  d.user_id = #{userId} AND c.state=1
+			<if test="id != null and id !=''">
+				and b.open_id =#{id}
+			</if>
+			</trim>
+			ORDER BY
+					x.createDate DESC
+			LIMIT #{startIndex},#{pageSize}
+	
+	</select>
+	<resultMap type="com.yz.center.model.vo.DiscussVo" id="discussVoMap">
+		<id column="themeId" property="themeId"/>
+		<result column="title" property="title"/>
+		<result column="createDate" property="createDate"/>
+		<result column="isTop" property="isTop"/>
+		<result column="userId" property="userId"/>
+		<result column="userName" property="userName"/>
+		<result column="maxUrl" property="maxUrl"/>
+		<association property="openCoursePo" javaType="com.yz.center.model.po.course.OpenCoursePo">
+			<id column="openId" property="openId"/>
+			<result column="courseName" property="courseName"/>
+		</association>
+		<collection property="discussPos" ofType="com.yz.center.model.po.discuss.DiscussPo">
+			<id column="discussId" property="discussId"/>
+			<result column="content" property="content"/>
+			<result column="nextCreateDate" property="createDate"/>
+		</collection>
+	</resultMap>
+	<!--按主题Id查询评论数量  -->
+	<select id="selecCount" parameterType="int" resultType="int">
+		SELECT
+			COUNT(1)
+		FROM
+			discuss_info
+		WHERE
+			theme_id = #{themeId}
+	</select>
+	<!--在主题下添加评论  -->
+	<insert id="addDiscussByThemeId" parameterType="com.yz.center.model.po.discuss.DiscussPo"  >
+		INSERT INTO
+			discuss_info (
+				user_id,
+				theme_id,
+				parent_id,
+				createDate,
+				content,
+				verify
+			)
+		VALUES(
+				#{userId},
+				#{discussThemePo.themeId},
+				#{parentDiscuss.discussId},
+				NOW(),
+				#{content},
+				#{verify}
+		)
+	
+	</insert>
+	
+	<update id="updateMydissCount" parameterType="com.yz.center.model.po.discuss.DiscussPo">
+		UPDATE study_course_info b
+		
+		LEFT JOIN student_course_rls c ON b.studentCourseId = c.id
+		LEFT JOIN discuss_theme_info d ON c.open_id = d.open_id
+		LEFT JOIN student_info e ON c.student_id = e.student_id
+		SET b.discussCount = (b.discussCount + 1)
+		WHERE
+			d.theme_id = #{discussThemePo.themeId} and e.user_id = #{userId}
+	</update>
+	
+	<insert id="addDiscussTheme" parameterType="com.yz.center.model.po.discuss.DiscussThemePo" >
+	
+		INSERT INTO
+			discuss_theme_info (
+				user_id,
+				open_id,
+				title,
+				isTop,
+				createDate
+			)
+		VALUES(
+				#{userId},
+				#{openCoursePo.openId},
+				#{title},
+				isTop,
+				NOW()
+		)
+	
+	</insert>
+	<select id="listDiscussTheme" parameterType="com.yz.center.util.common.PageBean" resultMap="discussVoMap">
+			SELECT
+					x.theme_id themeId,
+					x.title,
+					x.createDate,
+					x.isTop isTop,
+					b.open_id openId,
+					b.courseName,
+					c.user_id userId,
+					c.name userName
+			FROM
+					discuss_theme_info x
+			LEFT JOIN open_course_info b ON x.open_id = b.open_id
+			LEFT JOIN user_info c ON x.user_id = c.user_id
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				b.state = 1 and x.isEnable = 1
+				<if test="keyWords != null and keyWords != ''">
+					and (
+					x.title like CONCAT(CONCAT('%', #{keyWords}), '%')
+					or
+					b.courseName like CONCAT(CONCAT('%', #{keyWords}), '%')
+					)
+				</if>
+				<if test="openId != null and openId !=''">
+				and b.open_id = #{openId}
+				</if>
+				
+			</trim>
+			ORDER BY
+					x.createDate DESC
+			LIMIT #{startIndex},#{pageSize}
+	</select>
+	<select id="getDiscussThemeCount" parameterType="com.yz.center.util.common.PageBean" resultType="int">
+			SELECT
+				COUNT(1)
+			FROM
+					discuss_theme_info x
+			LEFT JOIN open_course_info b ON x.open_id = b.open_id
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				b.state = 1 and x.isEnable = 1
+				<if test="keyWords != null and keyWords != ''">
+					and (
+					x.title like CONCAT(CONCAT('%', #{keyWords}), '%')
+					or
+					b.courseName like CONCAT(CONCAT('%', #{keyWords}), '%')
+					)
+				</if>
+				
+			</trim>
+	</select>
+	
+	<update id="delDiscussTheme" parameterType="int">
+		UPDATE 
+			discuss_theme_info b
+		SET 
+			b.isEnable = 0
+		WHERE
+			b.theme_id = #{themeId}
+	</update>
+	
+	<select id="findDiscussThemebyId" parameterType="int" resultMap="discussVoMap">
+		SELECT
+					x.theme_id themeId,
+					x.title,
+					x.open_id openId
+			FROM
+					discuss_theme_info x
+			WHERE
+					x.theme_id = #{themeId}
+	</select>
+	<update id="updataTheme" parameterType="com.yz.center.model.po.discuss.DiscussThemePo">
+		UPDATE 
+			discuss_theme_info
+		SET 
+			title = #{title},
+			open_id = #{openCoursePo.openId}
+		WHERE
+			theme_id = #{themeId}
+	
+	</update>
+</mapper>

@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.paper.PaperDao">
+<select id="getCourseList" parameterType="pageBean" resultMap="courseList">
+	SELECT o.course_id,o.open_id,o.courseName,cy.course_type_id,
+	cy.type_name,u.user_id,u.name,p.num
+	from open_course_info o
+	LEFT JOIN course_info ci ON
+	o.course_id=ci.course_id
+	LEFT JOIN course_type cy ON
+	ci.course_type_id=cy.course_type_id
+	LEFT JOIN user_info u ON
+	ci.create_user_id=u.user_id
+	LEFT JOIN (
+	SELECT COUNT(1) num,oc.open_id
+	FROM examine_task_paper_info pf
+	LEFT JOIN open_course_info oc ON pf.openCourseId = oc.open_id
+	WHERE
+	 oc.schoolId =#{schoolId} 
+	 <if test="params.useType != null and params.useType !=''">
+				AND pf.useType in (${params.useType},3)
+	</if>
+	GROUP BY pf.openCourseId
+	  ) p ON p.open_id = o.open_id
+	where
+	ci.state=1 AND o.state=1 AND ci.school_id=#{schoolId} 
+    	<if test="keyWords != null and keyWords !=''">
+				AND (o.courseName LIKE CONCAT('%',#{keyWords},'%')
+				or cy.type_name LIKE CONCAT('%',#{keyWords},'%') 
+				or u.name LIKE CONCAT('%',#{keyWords},'%'))
+			</if>
+			limit #{startIndex},#{pageSize}
+
+    </select>
+    <resultMap type="com.yz.center.model.vo.paper.PaperCoursePage" id="courseList">
+    	<result column="course_id" property="courseId"/>
+    	<result column="open_id" property="openId"/>
+    	<result column="course_name" property="courseName"></result>
+    	<result column="course_type_id" property="courseTypeId"></result>
+    	<result column="type_name" property="courseTypeName"></result>
+        <result column="user_id" property="userId"></result>
+    	<result column="name" property="userName"></result>
+    </resultMap>
+    
+     <select id="countItems" parameterType="pageBean" resultType="Integer">
+        SELECT COUNT(o.course_id) from open_course_info o 
+       	LEFT JOIN  course_info ci ON o.course_id=ci.course_id
+    	LEFT JOIN course_type cy ON ci.course_type_id=cy.course_type_id 
+    	LEFT JOIN user_info u ON ci.create_user_id=u.user_id
+    	where ci.state=1 AND o.state=1 AND ci.school_id=#{schoolId} 
+    	<if test="keyWords != null and keyWords !=''">
+				AND (o.courseName LIKE CONCAT('%',#{keyWords},'%')
+				or cy.type_name LIKE CONCAT('%',#{keyWords},'%') 
+				or u.name LIKE CONCAT('%',#{keyWords},'%'))
+			</if>
+		</select>	
+			
+	<select id="getVideoAndpaperNum" parameterType="pageBean" resultMap="SubjectAndPaperList">
+	SELECT vf.video_id,vf.name,fd.paperNum,p.num FROM video_info vf
+	LEFT
+	JOIN (
+	SELECT COUNT(1) num,pf.videoId
+	FROM examine_task_paper_info
+	pf
+	WHERE
+	pf.useType=1 AND pf.openCourseId=#{openId} GROUP BY pf.videoId) p ON p.videoId=vf.video_id
+	LEFT JOIN open_course_info oc ON oc.course_id =vf.course_id
+	LEFT JOIN (
+	SELECT COUNT(1) paperNum ,pf.video_id FROM paper_info pf
+	WHERE pf.open_id=#{openId} AND pf.function_id in (1,3) GROUP BY pf.video_id ) fd ON fd.video_id=vf.video_id
+	WHERE oc.open_id =#{openId}
+    <if test="schoolId != null and schoolId != ''">
+	AND vf.school_id=#{schoolId}
+    </if>
+	limit #{startIndex},#{pageSize}
+    </select>
+    <resultMap type="com.yz.center.model.vo.paper.subjectAndpaperVo" id="SubjectAndPaperList">
+       <result column="video_id" property="videoId"/>
+    	<result column="name" property="videoName"/>
+    	<result column="subjectNum" property="subjectNum"/>
+    	<result column="paperNum" property="paperNum"></result>
+    </resultMap>
+    
+    <select id="getVideoAndsubjectNum" parameterType="pageBean" resultType="com.yz.center.model.vo.paper.subjectAndpaperVo">
+	SELECT vf.video_id videoId,vf.name videoName,p.paperNum,s.subjectNum FROM video_info vf
+	LEFT JOIN ( SELECT COUNT(1) paperNum,video_id FROM paper_info pf 
+    WHERE
+	pf.function_id=1 AND pf.open_id=#{openId} and pf.video_id in (select v.video_id FROM video_info v WHERE v.course_id=#{courseId} and v.state=1)
+	and pf.state=1
+    ) p ON p.video_id=vf.video_id
+   LEFT JOIN (SELECT COUNT(1) subjectNum,si.video_id FROM subject_info si
+   where si.course_id=#{courseId} and si.video_id in (select v.video_id FROM video_info v WHERE v.course_id=#{courseId} and v.state=1)
+   AND si.state=1
+    ) s on s.video_id=vf.video_id
+	WHERE vf.course_id=#{courseId} 
+    <if test="schoolId != null and schoolId != ''">
+	AND vf.school_id=#{schoolId}
+    </if>
+	limit #{startIndex},#{pageSize}
+    </select>
+   <!--  <resultMap type="com.yz.center.model.vo.paper.subjectAndpaperVo" id="SubjectsAndPapersList">
+       <result column="video_id" property="videoId"/>
+    	<result column="name" property="videoName"/>
+    	<result column="subjectNum" property="subjectNum"/>
+    	<result column="paperNum" property="paperNum"></result>
+    </resultMap> -->
+
+     <select id="countVideos" parameterType="pageBean" resultType="Integer">
+<!-- 
+    SELECT count(1)
+    FROM video_info vf
+	LEFT JOIN ( SELECT COUNT(1) paperNum,video_id FROM paper_info pf WHERE
+	pf.function_id=1 AND pf.open_id=#{openId}) p ON p.video_id=vf.video_id
+	WHERE vf.course_id=#{courseId}
+    <if test="schoolId != null and schoolId != ''">
+	AND vf.school_id=#{schoolId}
+    </if> -->
+
+    SELECT count(1) FROM video_info vf
+	LEFT JOIN open_course_info oc ON oc.course_id = vf.course_id
+	WHERE oc.open_id =#{openId} AND vf.school_id=#{schoolId} AND vf.state=1
+
+    </select>
+    <select id="getcountVideos" parameterType="pageBean" resultType="Integer">
+     SELECT count(1)
+    FROM video_info vf
+	LEFT JOIN ( SELECT COUNT(1) paperNum,video_id FROM paper_info pf WHERE
+	pf.function_id=1 AND pf.open_id=#{openId}) p ON p.video_id=vf.video_id
+	WHERE vf.course_id=#{courseId}
+    <if test="schoolId != null and schoolId != ''">
+	AND vf.school_id=#{schoolId}
+    </if>
+    </select>
+    
+    <select id="getcountBYopenIdANDsubjectType" resultType="Integer">
+  select COUNT(s.subject_id) FROM subject_info s
+  LEFT JOIN subject_type st on st.subject_type_id=s.subject_type_id
+  where s.course_id=#{courseId}
+  and s.subject_type_id =#{subjectTypeId}
+  and s.function_id=#{functionId}
+  and s.state=1 
+  and s.school_id=#{schoolId} 
+  <if test="videoId != null and videoId !=''">
+		and s.video_id =#{videoId}
+ </if> 
+    </select>
+    
+    <select id="getsubjectBYopenIdANDsubjectType" resultMap="subjects">
+    select st.subject_type_id,st.type_name,s.subject_id,s.title
+    FROM subject_info s
+    LEFT JOIN subject_type st on st.subject_type_id=s.subject_type_id
+    where s.course_id=#{courseId} and s.subject_type_id=#{subjectTypeId}
+    and s.function_id=#{functionId}
+    and s.state=1
+    and s.school_id=#{schoolId}
+    <if test="videoId != null and videoId !=''">
+		and s.video_id =#{videoId}
+ </if> 
+    ORDER BY RAND() LIMIT #{num}
+    </select>
+    <resultMap type="com.yz.center.model.po.paper.SubjectPo" id="subjects">
+       <result column="subject_type_id" property="subjectTypeId"/>
+    	<result column="type_name" property="typeName"/>
+    	<result column="subject_id" property="subjectId"/>
+    	<result column="title" property="title"></result>
+    </resultMap>
+    <insert id="createPaper" parameterType="com.yz.center.model.po.paper.PaperPo">
+	INSERT INTO
+		paper_info(
+		video_id,
+		schoolId,
+		open_id,
+		teacher_id,
+		function_id,
+		subjectNum,
+		title,
+		sort,
+		anySubjectScore,
+		totalScore,
+		subjectIds,
+		createDate,
+		stateDate,
+		state,
+		showSecond
+		) VALUES (
+		#{videoId},
+		#{schoolId},
+		#{openId},
+		#{teacherId},
+		#{functionId},
+		#{subjectNum},
+		#{title},
+		#{sort},
+		#{anySubjectScore},
+		#{totalScore},
+		#{subjectIds},
+		#{creDt},
+		#{staDt},
+		#{state},
+		#{showSecond}
+		)
+	</insert>	
+	<select id="getTeacherId" parameterType="Integer" resultType="Integer"> 
+	SELECT  t.teacher_id FROM teacher_class_rls t where t.class_id=#{courseId}
+	</select>
+	<select id="getCourseType" parameterType="Integer" resultType="courseTypePo">
+	SELECT ct.course_type_id courseTypeId,
+	ct.type_name typeName 
+	from course_type ct 
+	WHERE ct.school_id=#{schoolId} 
+	and ct.state=1 
+	and ct.parentId is NOT NULL
+	</select>
+	<select id="getOpenCourse" parameterType="Integer" resultType="openCoursePo">
+	select o.open_id,
+    o.courseName 
+    FROM open_course_info o 
+    WHERE o.course_id 
+    in(select c.course_id 
+    from course_info c 
+    WHERE c.course_type_id=#{courseTypeId} 
+    AND c.school_id=#{schoolId} 
+    and c.state=1) 
+    AND o.schoolId=#{schoolId} 
+    and o.state=1
+	</select>
+	<select id="getVideos" parameterType="Integer" resultType="videoPo">
+    SELECT 
+    v.video_id videoId,
+    v.`name` name 
+    from open_course_info o,
+    video_info v
+    WHERE o.course_id=v.course_id 
+    AND o.open_id=#{openId} 
+    and v.school_id=#{schoolId} 
+    and v.state=1 
+	</select>
+	
+	<select id="getPaper" parameterType="pageBean" resultType="paperVo">
+	SELECT p.paper_id paperId,
+	p.title,
+	o.courseName,
+	v.`name` videoName,
+	p.subjectNum,
+    p.totalScore,
+    t.`name` teacherName 
+    from paper_info p
+    LEFT JOIN open_course_info o ON o.open_id=p.open_id
+    LEFT JOIN video_info v ON v.video_id=p.video_id
+    LEFT JOIN teacher_info t ON t.teacher_id=p.teacher_id
+    WHERE p.schoolId=#{schoolId} 
+    and p.state=1 
+    <if test="params.functionId != null and params.functionId !=''">
+		 AND p.function_id=#{params.functionId}
+    </if> 
+    <if test="openId != null and openId !=''">
+		 and p.open_id=#{openId}
+    </if> 
+    <if test="videoId != null and videoId !=''">
+		 and p.video_id=#{videoId}
+    </if> 
+    <if test="keyWords != null and keyWords !=''">
+		 and p.title LIKE CONCAT('%',#{keyWords},'%')
+    </if> 
+   limit #{startIndex},#{pageSize}
+	</select>
+	<select id="getPaperCount" parameterType="pageBean" resultType="Integer">
+	SELECT 
+	count(1)
+    from paper_info p
+    LEFT JOIN open_course_info o ON o.open_id=p.open_id
+    LEFT JOIN video_info v ON v.video_id=p.video_id
+    LEFT JOIN teacher_info t ON t.teacher_id=p.teacher_id
+    WHERE p.schoolId=#{schoolId} 
+    and p.state=1 
+   <if test="params.functionId != null and params.functionId !=''">
+		 AND p.function_id=#{params.functionId}
+    </if> 
+    <if test="openId != null and openId !=''">
+		 and p.open_id=#{openId}
+    </if> 
+    <if test="videoId != null and videoId !=''">
+		 and p.video_id=#{videoId}
+    </if> 
+    <if test="keyWords != null and keyWords !=''">
+		 and p.title LIKE CONCAT('%',#{keyWords},'%')
+    </if> 
+	</select>
+	<update id="delete" parameterType="Integer">
+    UPDATE 
+    paper_info p SET
+    p.state=0
+    where p.paper_id=#{paperId}
+  	
+	</update>
+</mapper>

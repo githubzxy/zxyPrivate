@@ -200,6 +200,7 @@
     LEFT JOIN open_course_info cfo ON cfo.course_id=c.course_id
     LEFT JOIN cover_info ci ON ci.cover_id = c.cover_id
 	WHERE cfo.open_id=#{openId} and c.state = 1
+	GROUP BY scr.student_id
 	</select>
 
 

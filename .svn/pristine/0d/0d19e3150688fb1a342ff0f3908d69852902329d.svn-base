@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.user.UserDao">
+
+    <!-- 用登录id查询 用户基本信息-->
+	<select id="getUserById" parameterType="int" resultMap="resultUserList">
+	SELECT
+	u.user_id,
+	u.roleCode,
+	u.name,
+	u.loginId,
+	u.avatar,
+	u.stopDate,
+	u.state,
+	lf.loginPwd
+	FROM
+	user_info u
+	LEFT JOIN login_info lf ON lf.login_id=u.loginId
+	WHERE
+	loginId = #{loginId}
+	</select>
+	<resultMap type="userPo" id="resultUserList">
+		<id column="user_id" property="userId" />
+		<result column="loginId" property="loginId" />
+		<result column="name" property="name" />
+		<result column="avatar" property="avatar" />
+		<result column="state" property="state" />
+		<result column="roleCode" property="roleCode" />
+		<result column="stopDate" property="stopDate" />
+		<association property="loginPo" javaType="loginPo">
+        	<result column="loginPwd" property="loginPwd"/>
+        </association>
+	</resultMap>
+	<select id="selectStudent" parameterType="int" resultType="com.yz.center.model.po.StudentPo">
+		SELECT 
+			a.student_id id
+		FROM
+			student_info a
+		WHERE
+			a.user_id = #{userId}
+	</select>
+	<select id="selectTeacher" parameterType="int" resultType="com.yz.center.model.po.teacher.TeacherPo">
+		SELECT
+			teacher_id
+		FROM
+			teacher_info
+		WHERE user_id = #{userId}
+	</select>
+	<insert id="addApplyUser" parameterType="userPo">
+		
+		
+		INSERT user_info 
+			   (
+			   roleCode,
+			   name,
+			   number,
+			   info,
+			   createDate,
+			   state
+			   )
+	    values(
+	    		#{roleCode},
+	    		#{name},
+	    		#{number},
+	    		#{info},
+	    		NOW(),
+	    		2
+	    	  )		   	
+    </insert>
+    
+    <select id="find" resultType="com.yz.center.model.po.user.LoginPo">
+    	SELECT a.login_id loginId,
+    		   a.loginPwd loginPwd
+    	FROM login_info a 
+    	LEFT JOIN  user_info b ON a.login_id = b.loginId 
+    	WHERE b.user_id = #{userId} AND a.loginPwd = #{oldPwd}
+    </select>
+    <update id="updatePwd" parameterType="loginPo">
+    	UPDATE 
+    		login_info a  
+    	SET a.loginPwd = #{loginPwd} 
+    	WHERE a.login_id=#{loginId}
+    </update>
+    
+    <update id="updateInfo" parameterType="com.yz.center.model.vo.StudentForm" >
+    	UPDATE
+    		user_info a
+    	SET a.gender = #{gender},
+    	    a.avatar = #{avatar},
+    		a.birthday = #{birthday},
+    		a.email = #{email},
+    		a.info  = #{info},
+    		a.phone = #{phone}
+    	WHERE a.user_id	= #{userId}
+    </update>
+    
+</mapper>

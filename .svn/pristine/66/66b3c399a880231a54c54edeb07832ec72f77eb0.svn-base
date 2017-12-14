@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.test.TestDao">
+
+  <select id="findType" resultType="com.yz.center.model.po.test.SubjectTypePo">
+  	SELECT 
+  		subject_type_id subjectTypeId,
+  		type_name typeName
+  	FROM
+  		subject_type
+
+  </select>
+  <select id="findAllFunction" resultType="com.yz.center.model.po.test.FunctionPo">
+  	SELECT 
+  		function_id functionId,
+  		name
+  	FROM
+  		function_info
+  
+  </select>
+  <select id="findTestBySubjectId" parameterType="int" resultMap="testMap">
+ 		SELECT 
+  		a.subject_id subjectId,
+				a.title,
+				a.subject_type_id subjectTypeId,
+				b.type_name typeName,
+				a.course_id courseId,
+				d.course_name courseName,
+				a.video_id videoId,
+				f.name videoName,
+				a.user_id userId,
+				e.name userName,
+				a.createDate createDate,
+				a.optionsA optionsA,
+				a.optionsB optionsB,
+				a.optionsC optionsC,
+				a.optionsA optionsD,
+				a.true_option trueOption,
+				a.function_id functionId,
+				c.name functionName
+		FROM subject_info a 
+			
+			LEFT JOIN subject_type b ON a.subject_type_id = b.subject_type_id
+			LEFT JOIN function_info c ON a.function_id = c.function_id
+			LEFT JOIN course_info d  ON a.course_id = d.course_id
+			LEFT JOIN user_info e on a.user_id = e.user_id
+			LEFT JOIN video_info f ON a.video_id = f.video_id
+			
+		WHERE
+			subject_id = #{subjectId}	
+		
+  		
+  
+  </select>
+  <select id="findTest" parameterType="pageBean" resultMap="testMap">
+ 		SELECT 
+ 				
+				a.subject_id subjectId,
+				a.title,
+				a.subject_type_id subjectTypeId,
+				b.type_name typeName,
+				a.course_id courseId,
+				d.course_name courseName,
+				a.video_id videoId,
+				f.name videoName,
+				a.user_id userId,
+				e.name userName,
+				a.createDate createDate
+			
+		FROM subject_info a 
+			
+			LEFT JOIN subject_type b ON a.subject_type_id = b.subject_type_id
+			LEFT JOIN function_info c ON a.function_id = c.function_id
+			LEFT JOIN course_info d  ON a.course_id = d.course_id
+			LEFT JOIN user_info e on a.user_id = e.user_id
+			LEFT JOIN video_info f ON a.video_id = f.video_id
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				a.state = 1 and a.school_id = #{schoolId}
+				<if test="courseId != null and courseId != ''">
+					and a.course_id = #{courseId}				
+				</if>
+				<if test="keyWords != null and keyWords != ''">
+			
+					and a.title like CONCAT(CONCAT('%', #{keyWords}), '%')
+				</if>
+				<if test="videoId != null and videoId != ''">
+					and a.video_id = #{videoId}
+				</if>
+			</trim>
+			limit #{startIndex},#{pageSize}
+  </select>
+  
+  <insert id="addTest" parameterType="com.yz.center.model.vo.test.TestVo">
+  	INSERT INTO
+  				subject_info
+  				(
+  				course_id,
+  				title,
+  				subject_type_id,
+  				optionsA,
+  				optionsB,
+  				optionsC,
+  				optionsD,
+  				true_option,
+  				school_id,
+  				video_id,
+  				function_id,
+  				user_id,
+  				createDate,
+  				stateDate	
+  				)
+  		 VALUES(
+  		 		#{courseId},
+  		 		#{title},
+  		 		#{subjectTypeId},
+  		 		#{optionA},
+  		 		#{optionB},
+  		 		#{optionC},
+  		 		#{optionD},
+  		 		#{trueOption},
+  		 		#{schoolId},
+  		 		#{videoId},
+  		 		#{functionId},
+  		 		#{userId},
+  		 		NOW(),
+  		 		NOW()
+
+  		 		)
+  
+  </insert>
+  
+    <insert id="insertTest" parameterType="java.util.List" useGeneratedKeys="true">
+  	INSERT INTO
+  				subject_info
+  				(
+  				course_id,
+  				title,
+  				subject_type_id,
+  				optionsA,
+  				optionsB,
+  				optionsC,
+  				optionsD,
+  				true_option,
+  				school_id,
+  				video_id,
+  				function_id,
+  				user_id,
+  				createDate,
+  				stateDate	
+  				)
+  
+  		 VALUES
+  		 <foreach collection="list" item="item" index="index"  separator=","  > 
+				<if test="item.subjectTypeId != null and item.subjectTypeId != ''">
+				(
+  		 		#{item.courseId},
+  		 		#{item.title},
+  		 		#{item.subjectTypeId},
+  		 		#{item.optionA},
+  		 		#{item.optionB},
+  		 		#{item.optionC},
+  		 		#{item.optionD},
+  		 		#{item.trueOption},
+  		 		#{item.schoolId},
+  		 		#{item.videoId},
+  		 		#{item.functionId},
+  		 		#{item.userId},
+  		 		NOW(),
+  		 		NOW()
+  		 		)
+				</if>
+  		</foreach>
+  </insert>
+  <update id="updateTest" parameterType="com.yz.center.model.vo.test.TestVo">
+  	UPDATE
+  		subject_info
+  	
+  	SET
+		course_id=#{courseId},
+		title=#{title},
+		subject_type_id=#{subjectTypeId},
+		optionsA=#{optionA},
+		optionsB=#{optionB},
+		optionsC=#{optionC},
+		optionsD=#{optionD},
+		true_option=#{trueOption},
+		school_id=#{schoolId},
+		video_id=#{videoId},
+		function_id=#{functionId},	
+		stateDate=NOW()	
+  	WHERE
+  		subject_id = #{subjectId}
+  
+  </update>
+	  
+  <update id="updateTestState">
+    	UPDATE 
+    		subject_info
+    	SET 
+    		stateDate = NOW(),
+    		state = 0
+    	WHERE 
+    		subject_id =#{testId}
+
+  </update>
+
+  <update id="updateManyTestState" parameterType="int">
+		UPDATE 
+    		subject_info
+    	SET 
+    		stateDate = NOW(),
+    		state = 0
+    	WHERE 
+    		subject_id in 
+    		<foreach collection="array" item="id" open="(" separator="," close=")" >
+    		    #{id}
+    		</foreach>
+
+  </update>
+  
+  
+  
+  	<!-- 查询试题总数 -->
+	<select id="selectPageCount" parameterType="pageBean"  resultType="int">
+		SELECT COUNT(1) FROM subject_info a
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				a.state = 1 and a.school_id = #{schoolId}
+				<if test="courseId != null and courseId != ''">
+					and a.course_id = #{courseId}				
+				</if>
+				<if test="keyWords != null and keyWords != ''">
+			
+					and a.title like CONCAT(CONCAT('%', #{keyWords}), '%')
+				</if>
+				<if test="videoId != null and videoId != ''">
+					and a.video_id = #{videoId}
+				</if>
+			</trim>
+	</select>
+
+	
+	<!-- 查询试卷列表 -->
+	<select id="getTestListByUserId"  parameterType="pageBean" resultType="stuTestForm">
+	SELECT
+	spf.student_paper_id,spf.id,etpf.limitTime,etpf.isTimeLimit,etpf.title,
+	ocf.examineStartDate,ocf.examineEndDate,ocf.studyScore,ocf.courseName,spf.openCourseId,spf.paperId,ocf.passScore,spf.score,spf.submitDate,cof.maxUrl
+	FROM student_paper_info spf
+	LEFT JOIN open_course_info ocf ON
+	ocf.open_id=spf.openCourseId
+	LEFT JOIN
+	course_info cf ON cf.course_id=ocf.course_id
+	LEFT JOIN student_course_rls scr ON scr.open_id=ocf.open_id
+	LEFT JOIN cover_info
+	cof ON cof.cover_id=cf.cover_id
+	LEFT JOIN
+	examine_task_paper_info etpf ON etpf.id=spf.id
+	WHERE
+	spf.isExam=1 AND
+	ocf.state=1 AND scr.state=1 AND spf.schoolId=#{schoolId} AND
+	spf.student_id=#{params.studentId} AND scr.student_id=#{params.studentId}
+	AND
+	spf.isSubmit=#{params.isSubmit} ORDER BY
+	ocf.examineStartDate ASC
+	LIMIT
+	#{startIndex},#{pageSize}  
+	</select>
+	<select id="getlimitTime"  resultType="Integer">
+	SELECT etpf.limitTime  FROM examine_task_paper_info etpf WHERE etpf.openCourseId=#{openId} AND etpf.useType=2 AND etpf.isTimeLimit=1 AND etpf.schoolId=#{schoolId}
+	</select>
+	<select id="getCountByIsSubmit" parameterType="pageBean" resultType="Integer">
+	SELECT
+	COUNT(1)
+	FROM student_paper_info spf
+	LEFT JOIN open_course_info ocf
+	ON ocf.open_id=spf.openCourseId
+	LEFT JOIN student_course_rls scr ON
+	scr.open_id=ocf.open_id
+	WHERE spf.isExam=1 AND ocf.state=1 AND
+	scr.state=1
+	AND spf.schoolId=#{schoolId} AND spf.student_id=#{params.studentId} AND
+	scr.student_id=#{params.studentId}
+	AND spf.isSubmit=#{params.isSubmit}
+	</select>
+	<!-- isSubmit=1取得已考次数 -->
+	<select id="getTestCount" resultType="Integer">
+	SELECT COUNT(1)
+	FROM student_paper_info spf WHERE
+	spf.isExam=1  AND spf.openCourseId=#{openCourseId} 
+	<if test="isSubmit != null and isSubmit != ''">
+				 AND spf.isSubmit=#{isSubmit}
+	</if>
+	</select>
+
+	<!-- 查询考试课程名 -->
+	<select id="getCourseName" resultType="openCoursePo">
+		SELECT distinct
+		ocf.open_id,ocf.courseName,ocf.examineStartDate,ocf.examineEndDate
+		FROM student_paper_info spf
+		LEFT JOIN open_course_info ocf ON ocf.open_id=spf.openCourseId
+		WHERE spf.isExam=1 AND spf.schoolId=#{schoolId}
+	</select>
+	<!-- 查询考试课程名 -->
+	<select id="getCourseInfo" resultType="openCoursePo">
+		SELECT distinct
+		ocf.open_id,ocf.courseName,ocf.examineStartDate,ocf.examineEndDate
+		FROM student_paper_info spf
+		LEFT JOIN open_course_info ocf ON ocf.open_id=spf.openCourseId
+		WHERE spf.isExam=#{isExam} AND spf.schoolId=#{schoolId}
+		<if test="openId != null and openId != ''">
+				 AND ocf.open_id=#{openId}
+	    </if>
+		LIMIT #{begin},#{pageSize}  
+	</select>
+	<select id="getMarkCount" resultType="Integer">
+	SELECT COUNT(1) FROM
+	student_paper_info spf
+	WHERE spf.isExam=#{isExam} AND
+	spf.isMarking=1 AND
+	spf.openCourseId=#{openCourseId} AND spf.schoolId=#{schoolId}
+    </select>
+	<select id="getSubmitCount" resultType="Integer">
+		SELECT COUNT(1) FROM
+		student_paper_info spf
+		WHERE spf.isExam=#{isExam} AND isSubmit=1 AND spf.openCourseId=#{openCourseId}
+		AND spf.schoolId=#{schoolId}
+	</select>
+	<select id="getTestStatisticsCount" resultType="Integer">
+	SELECT DISTINCT spf.openCourseId ,COUNT(1)FROM student_paper_info spf
+	LEFT JOIN open_course_info ocf ON ocf.open_id=spf.openCourseId
+	WHERE spf.isExam=1 AND spf.schoolId=#{schoolId}
+    </select>
+    <!-- 查看学生考试信息 -->
+	<select id="testStatisticsCheck" resultType="testStatisticsCheckForm">
+	SELECT uf.name,uf.phone,sf.number,spf.submitDate,spf.score FROM
+	student_paper_info spf
+	LEFT JOIN student_info sf ON sf.student_id=spf.student_id
+	LEFT JOIN user_info uf ON uf.user_id=sf.user_id
+	WHERE spf.isExam=1 AND spf.isSubmit=1 AND spf.openCourseId=#{openCourseId}
+	AND spf.schoolId=#{schoolId}
+	<if test="name != null and name != ''">
+				AND (
+				uf.name LIKE CONCAT('%',#{name},'%')
+				)
+			</if>
+			<if test="number != null and number != ''">
+				AND (
+				sf.number LIKE CONCAT('%',#{number},'%')
+				)
+			</if>
+	LIMIT #{begin},#{pageSize}  
+    </select>
+    <select id="getTestStatisticsCheckCount" resultType="Integer">
+	SELECT COUNT(1)FROM student_paper_info spf
+	LEFT JOIN open_course_info ocf ON ocf.open_id=spf.openCourseId
+	WHERE spf.isExam=#{isExam} AND spf.schoolId=#{schoolId}
+    </select>
+    
+    <select id="getCourseNameForTest" resultType="testInfoForm">
+	SELECT DISTINCT ocf.courseName FROM examine_task_paper_info etpf
+	LEFT JOIN open_course_info ocf ON ocf.open_id=etpf.openCourseId
+	WHERE etpf.useType=2 AND etpf.schoolId=#{schoolId}
+    </select>
+    <select id="getTestInfo" parameterType="pageBean" resultType="testInfoForm">
+	SELECT
+	etpf.id,etpf.title,etpf.paperIds,ocf.courseName,etpf.createDate,etpf.paperNum,ocf.open_id,uf.name
+	FROM
+	examine_task_paper_info etpf
+	LEFT JOIN open_course_info ocf ON ocf.open_id=etpf.openCourseId
+	LEFT JOIN user_info uf ON uf.user_id=etpf.createUserId
+	WHERE etpf.useType=2  AND etpf.schoolId=#{schoolId}
+	<if test="params.courseName != null and params.courseName != ''">
+				AND ocf.courseName=#{params.courseName}
+	</if>
+	<if test="params.title != null and params.title != ''">
+				AND (
+				etpf.title  LIKE CONCAT('%',#{params.title},'%')
+				)
+	</if>
+	LIMIT #{startIndex},#{pageSize}  
+    </select>
+     <select id="getCountOfTest" parameterType="pageBean" resultType="Integer">
+	SELECT COUNT(1) FROM
+	examine_task_paper_info etpf
+	LEFT JOIN open_course_info ocf ON ocf.open_id=etpf.openCourseId
+	WHERE etpf.useType=2 AND etpf.schoolId=#{schoolId}
+    <if test="params.courseName != null and params.courseName != ''">
+				AND ocf.courseName=#{params.courseName}
+	</if>
+	<if test="params.title != null and params.title != ''">
+				AND (
+				etpf.title  LIKE CONCAT('%',#{params.title},'%')
+				)
+	</if>
+     </select>
+	<select id="getCountOfDelete" resultType="Integer">
+		SELECT COUNT(1) FROM student_paper_info spf WHERE 
+		spf.schoolId=#{schoolId} AND spf.id=#{Id}
+	</select>
+     <delete id="testDelete" >
+     DELETE FROM examine_task_paper_info  WHERE id=#{Id}
+     </delete>
+     
+     <insert id="testAdd" parameterType="taskPo"
+		useGeneratedKeys="true" keyProperty="Id">
+		INSERT INTO
+		examine_task_paper_info
+		(
+		title,
+		useType,
+		openCourseId,
+		schoolId,
+		paperIds,
+		isTimeLimit,
+		limitTime,
+		createDate,
+		createUserId,
+		paperNum
+		)
+		VALUES (
+		#{title},
+		#{useType},
+		#{openCourseId},
+		#{schoolId},
+		#{paperIds},
+		#{isTimeLimit},
+		#{limitTime,jdbcType=VARCHAR},
+		#{createDate},
+		#{createUserId},
+		#{paperNum}
+		);
+	</insert>
+    <select id="getPaperByPaperIdsOfTest" resultType="testInfoForm">
+	SELECT pf.paper_id,pf.subjectNum,uf.`name`,ocf.courseName,pf.title,pf.createDate,pf.function_id  FROM paper_info pf 
+    LEFT JOIN open_course_info ocf ON ocf.open_id=pf.open_id
+    LEFT JOIN teacher_info tf ON tf.teacher_id=pf.teacher_id
+    LEFT JOIN user_info uf ON uf.user_id=tf.user_id
+    WHERE pf.schoolId=#{schoolId} AND pf.function_id in (2,3) AND pf.paper_id in  (${params.paperIds})
+	<if test="params.title != null and params.title != ''">
+				AND (
+				pf.title  LIKE CONCAT('%',#{params.title},'%')
+				)
+	</if>
+	LIMIT #{startIndex},#{pageSize}  
+    </select>
+     <select id="getPaperCountByPaperIdsOfTest" resultType="Integer">
+	SELECT COUNT(1) FROM paper_info pf 
+    WHERE pf.schoolId=#{schoolId} AND pf.function_id in (2,3) AND pf.paper_id in  (${params.paperIds}) 
+	<if test="params.title != null and params.title != ''">
+				AND (
+				pf.title  LIKE CONCAT('%',#{params.title},'%')
+				)
+	</if>
+    </select>
+    <select id="getExamine" resultType="subjectPo" >
+	SELECT *FROM subject_info sfo
+	WHERE sfo.function_id in (${functionId},3) AND sfo.state=1 AND sfo.subject_id in  (${subjectIds}) ORDER BY sfo.subject_type_id; 
+	</select>
+	<insert id="examineAdd" parameterType="studentSubjectPo"
+		useGeneratedKeys="true" keyProperty="studentSubjectId">
+		INSERT INTO
+		student_subject_info
+		(
+		subject_type_id,
+		student_paper_id,
+		subjectNum,
+		totalScore,
+		anySubjectScore,
+		subjectIds,
+		trueAnswers,
+		stuAnswers,
+		stuScore
+		)
+		VALUES (
+		#{subjectTypeId},
+		#{studentPaperId},
+		#{subjectNum},
+		#{totalScore},
+		#{anySubjectScore},
+		#{subjectIds},
+		#{trueAnswers},
+		#{stuAnswers},
+		#{stuScore}
+		);
+	</insert>
+  <resultMap type="testPo" id="testMap">
+        <id column="subjectId" property="subjectId"/>
+        <result column="title" property="title"/>
+  		<result column="createDate" property="createDate"/>
+  		<result column="optionsA" property="optionsA"/>
+  		<result column="optionsB" property="optionsB"/>
+  		<result column="optionsC" property="optionsC"/>
+  		<result column="optionsD" property="optionsD"/>
+  		<result column="trueOption" property="trueOption"/>
+ 	   <association property="userPo" javaType="userPo">
+       	<id column="userId" property="userId"/>
+       	<result column="userName" property="name"/>
+       </association>
+        <association property="subjectTypePo" javaType="com.yz.center.model.po.test.SubjectTypePo">
+       	<id column="subjectTypeId" property="subjectTypeId"/>
+       	<result column="typeName" property="typeName"/>
+       </association>
+         <association property="coursePo" javaType="coursePo">
+       	<id column="courseId" property="courseId"/>
+       	<result column="courseName" property="courseName"/>
+       </association>
+        <association property="video" javaType="videoPo">
+       	<id column="videoId" property="videoId"/>
+       	<result column="videoName" property="name"/>
+       </association>
+       <association property="functionPo" javaType="functionPo">
+       	<id column="functionId" property="functionId"/>
+       	<result column="functionName" property="name"/>
+       </association>
+  </resultMap>
+  
+  
+</mapper>

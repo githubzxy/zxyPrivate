@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.teacher.TeacherDao">
+	<!-- 添加教师 -->
+	<insert id="userAdd" parameterType="com.yz.center.model.form.TeacherForm"
+		useGeneratedKeys="true" keyProperty="userId">
+		INSERT INTO
+		user_info
+		(
+		gender,
+		name,
+		number,
+		mobile,
+		info,
+		birthday,
+		IdCard,
+		email,
+		avatar,
+		createDate,
+		roleCode,
+		loginId,
+		school_id
+		)
+		VALUES (
+		#{gender},
+		#{name},
+		#{number},
+		#{mobile},
+		#{info},
+		#{birthday},
+		#{idCard},
+		#{email},
+		#{avatar},
+		#{createDate},
+		#{roleCode},
+		#{loginId},
+		#{schoolId}
+		);
+	</insert>
+	
+	<insert id="teacherAdd" parameterType="com.yz.center.model.form.TeacherForm"
+		useGeneratedKeys="true" keyProperty="teacherId">
+		INSERT INTO
+		teacher_info
+		(
+		user_id,
+		login_id,
+		number,
+		name,
+		roleCode,
+		position,
+		department
+		)
+		VALUES (
+		#{userId},
+		#{loginId},
+		#{number},
+		#{name},
+		#{roleCode},
+		#{position},
+		#{department}
+		);
+	</insert>
+	<insert id="loginAdd" parameterType="com.yz.center.model.form.TeacherForm"
+		useGeneratedKeys="true" keyProperty="loginId">
+		INSERT INTO login_info ( schoolId,
+		loginName, loginPwd, roleCode )
+		VALUES (
+		#{schoolId},
+		#{number},
+		#{loginPwd},
+		#{roleCode}
+		);
+	</insert>
+	<update id="userUpdate" parameterType="com.yz.center.model.form.TeacherForm">
+		UPDATE user_info SET
+		gender = #{gender},
+		name = #{name},
+		number = #{number},
+		mobile = #{mobile},
+		info = #{info},
+		birthday = #{birthday},
+		IdCard = #{idCard},
+		email =#{email},
+		avatar =#{avatar}
+		WHERE user_id = #{userId}
+	</update>
+	<update id="userDelete" parameterType="com.yz.center.model.po.user.UserPo">
+		UPDATE user_info SET
+		state =#{state}
+		WHERE user_id = #{userId}
+	</update>
+	<update id="teacherUpdate" parameterType="com.yz.center.model.form.TeacherForm">
+		UPDATE teacher_info SET
+		number = #{number},
+		name = #{name},
+		position = #{position},
+		department = #{department}
+		WHERE teacher_id = #{teacherId}
+	</update>
+	<update id="loginUpdate" parameterType="com.yz.center.model.form.TeacherForm">
+		UPDATE login_info SET
+		loginName = #{number},
+		loginPwd = #{loginPwd}
+		WHERE login_id = #{loginId}
+	</update>
+	<update id="updateLoginForPwd">
+		UPDATE login_info SET
+		loginPwd = #{loginPwd}
+		WHERE login_id = #{loginId}
+	</update>
+
+	<select id="getTeacher" resultMap="resultUserList" >
+		select
+		u.user_id,u.name,u.number,u.mobile,u.email,u.IdCard,u.state,
+		l.login_id,l.loginPwd,
+		t.teacher_id,t.position,t.department
+		from user_info u
+		LEFT JOIN teacher_info t on u.user_id=t.user_id 
+		LEFT JOIN login_info l on u.loginId=l.login_id 
+		where
+		u.state=1
+	</select>
+	<select id="getTeacherById" resultMap="resultUserList" >
+		select
+		*
+		from user_info u
+		LEFT JOIN teacher_info t on u.user_id=t.user_id 
+		LEFT JOIN login_info l on u.loginId=l.login_id 
+		where
+		u.user_id=#{userId}
+	</select>
+	<select id="getUserById" resultMap="resultUserList" >
+		select
+		*
+		from user_info u
+		where
+		u.user_id=#{userId}
+	</select>
+	<select id="getUserBynumberAndSchoolId" resultMap="resultUserList" >
+		select
+		*
+		from user_info u
+		where
+		u.number=#{number}
+		AND u.school_id=#{schoolId}
+	</select>
+	<select id="validate" parameterType="com.yz.center.model.form.TeacherForm" resultType="Integer">
+		select
+		COUNT(1)
+		from user_info u
+		where
+		u.number=#{number}
+		AND u.school_id=#{schoolId}
+	</select>
+	<select id="getTeacherByPage" resultMap="resultUserList" >
+		select
+		u.user_id,u.name,u.number,u.mobile,u.email,u.IdCard,u.state,u.gender,
+		l.login_id,l.loginPwd,
+		t.teacher_id,t.position,t.department
+		from teacher_info t
+		LEFT JOIN user_info u on u.user_id=t.user_id 
+		LEFT JOIN login_info l on u.loginId=l.login_id 
+		where
+			u.state=1 
+			LIMIT #{begin},#{pageSize}  
+	</select>
+	
+	<!-- 根据条件查询教师分页列表信息 -->
+	<select id="getTeacherByCondition" parameterType="pageBean" resultMap="resultUserList" >
+		select
+		u.user_id,u.name,u.number,u.mobile,u.email,u.IdCard,u.state,u.gender,
+		l.login_id,l.loginPwd,
+		t.teacher_id,t.position,t.department
+		from teacher_info t
+		LEFT JOIN user_info u on u.user_id=t.user_id 
+		LEFT JOIN login_info l on u.loginId=l.login_id 
+		where u.state=1 AND u.school_id = #{schoolId}
+			<if test="params.teacher.name != null and params.teacher.name != ''">
+				AND u.name LIKE CONCAT('%',#{params.teacher.name},'%')
+			</if>
+			<if test="params.teacher.number != null and params.teacher.number != ''">
+				AND u.number LIKE CONCAT('%',#{params.teacher.number},'%')
+			</if>
+			LIMIT #{startIndex},#{pageSize}  
+	</select>
+	
+	<!-- 根据条件查询教师总数 -->
+	<select id="getCountByCondition" parameterType="pageBean" resultType="Integer">
+	SELECT 
+		count(1) 
+	FROM teacher_info t
+	LEFT JOIN user_info u on u.user_id=t.user_id 
+	LEFT JOIN login_info l on u.loginId=l.login_id 
+    WHERE u.state=1 AND u.school_id = #{schoolId}
+	<if test="params.teacher.name != null and params.teacher.name != ''">
+		AND u.name LIKE CONCAT('%',#{params.teacher.name},'%')
+    </if>
+	<if test="params.teacher.number != null and params.teacher.number != ''">
+		AND u.number LIKE CONCAT('%',#{params.teacher.number},'%')
+	</if>
+  </select>
+  <select id="getCount" resultType="Integer">
+    SELECT count(*) FROM teacher_info t
+	LEFT JOIN user_info u on u.user_id=t.user_id 
+	LEFT JOIN login_info l on u.loginId=l.login_id 
+    WHERE u.state=1 
+  </select>
+  
+  
+  
+  
+     <select id="selectPageCount" resultType="int">
+    	SELECT COUNT(1) 
+    	
+    	FROM 
+    		teacher_info a
+    	
+    	LEFT JOIN  teacher_class_rls b ON a.teacher_id =b.teacher_id
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+    	<if test="classId != null and classId !=''">
+    		 b.class_id=#{classId}
+    		</if>
+    	<if test="pageBean.keyWords != null and pageBean.keyWords !=''">
+			and (
+				a.name like CONCAT(CONCAT('%', #{pageBean.keyWords}), '%')
+				or
+				a.position like CONCAT(CONCAT('%', #{pageBean.keyWords}), '%')
+				or
+				a.department like CONCAT(CONCAT('%', #{pageBean.keyWords}), '%')
+				)
+		</if> 
+		</trim>
+    </select>
+    <select id="getTeacherByclassId" resultType="com.yz.center.model.po.teacher.TeacherPo">
+    	SELECT
+    		a.user_id userId,
+    		a.teacher_id teacherId,
+    		a.number,
+    		a.name,
+    		a.position,
+    		a.department
+    	FROM
+    		teacher_info a
+    	LEFT JOIN  teacher_class_rls b ON a.teacher_id =b.teacher_id	
+    	<trim prefix="WHERE" prefixOverrides="AND|OR">
+    	<if test="classId != null and classId !=''">
+    		 b.class_id=#{classId}
+    		</if>
+    		<if test="pageBean.keyWords != null and pageBean.keyWords !=''">
+				and (
+					a.name like CONCAT(CONCAT('%', #{pageBean.keyWords}), '%')
+					or
+					a.position like CONCAT(CONCAT('%', #{pageBean.keyWords}), '%')
+					or
+					a.department like CONCAT(CONCAT('%', #{pageBean.keyWords}), '%')
+					)
+			</if> 
+		</trim>
+    	LIMIT #{pageBean.startIndex},#{pageBean.pageSize}
+    </select>
+    
+	<select id="getAllTeacherByclassId" resultType="int">
+			SELECT
+			a.user_id userId
+			FROM teacher_info a
+			LEFT JOIN teacher_class_rls b ON a.teacher_id = b.teacher_id	
+			WHERE b.class_id=#{classId}
+	</select>
+  	<select id="getAllTeacher" resultType="int">
+		SELECT
+			a.user_id
+		FROM
+			teacher_info a
+		LEFT JOIN user_info b ON a.user_id = b.user_id
+		WHERE b.school_id = #{schoolId} and b.state = 1
+  	</select>
+  
+  
+  
+	<resultMap type="userPo" id="resultUserList">
+		<id column="user_id" property="userId" />
+		<result column="loginId" property="loginId" />
+		<result column="name" property="name" />
+		<result column="number" property="number" />
+		<result column="mobile" property="mobile" />
+		<result column="email" property="email" />
+		<result column="IdCard" property="idCard" />
+		<result column="gender" property="gender" />
+		<result column="state" property="state" />
+		<result column="roleCode" property="roleCode" />
+		<result column="avatar" property="avatar" />
+		<result column="info" property="info" />
+		<result column="birthday" property="birthday" />
+		<result column="birthday" property="birthday2" />
+		<result column="phone" property="phone" />
+		<result column="createDate" property="createDate" />
+		<result column="stopDate" property="stopDate" />
+		<result column="school_id" property="schoolId" />
+		<association property="loginPo" javaType="loginPo">
+        	<id column="login_id" property="loginId"/>
+        	<result column="loginPwd" property="loginPwd"/>
+        </association>
+		<association property="teacherPo"  javaType="teacherPo">
+			<id column="teacher_id" property="teacherId" />
+			<result column="position" property="position" />
+			<result column="department" property="department" />
+		</association>
+	</resultMap>
+	
+	
+	
+	
+	
+	
+	
+</mapper>

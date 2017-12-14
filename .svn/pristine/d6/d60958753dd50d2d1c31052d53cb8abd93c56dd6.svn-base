@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.message.NoticeDao">
+		<!-- 查询公告总数 -->
+	<select id="selectPageCount" parameterType="pageBean" resultType="int">
+		SELECT 
+			COUNT(1) 
+		FROM 
+			notice_info 
+		WHERE 
+			isDelete = 0 
+		<if test="keyWords != null and keyWords != ''">
+			and title like CONCAT(CONCAT('%', #{keyWords}), '%')
+		</if> 
+	</select>
+	<!--查询列表，分页，关键词  -->
+	<select id="findNoticePos" parameterType="pageBean" resultMap="noticeMap">
+		select
+			a.notice_id noticeId,
+        	a.title title,
+        	a.user_id userId,
+        	a.createDate createDate,
+        	b.name userName
+		from
+			notice_info a
+		INNER JOIN user_info b ON a.user_id=b.user_id
+		where a.isDelete = 0
+			<if test="keyWords != null and keyWords != ''">
+				AND a.title like CONCAT(CONCAT('%', #{keyWords}), '%')
+			</if> 
+		limit #{startIndex},#{pageSize}
+	</select>
+
+
+	<!-- 根据id查询详细信息 -->
+    <select id="findNoticePoById" parameterType="int" resultMap="noticeMap">
+    	select
+    		a.notice_id noticeId,
+        	a.title title,
+        	a.content content,
+        	a.clickNum clickNum,
+        	a.user_id userId,
+        	a.createDate createDate,
+        	b.name userName
+        from 
+        	notice_info a
+        LEFT JOIN user_info b ON a.user_id = b.user_id
+        where 
+        	a.notice_id = #{noticeId} and a.isDelete = 0
+    </select>
+	 <resultMap type="com.yz.center.model.vo.message.NoticeVo" id="noticeMap">
+	 	<id column="noticeId" property="noticeId"/>
+        <result column="content" property="content"/>
+        <result column="title" property="title"/>
+        <result column="createDate" property="createDate"/>
+        <result column="clickNum" property="clickNum"/>
+         <association property="user" javaType="userPo">
+        	<id column="userId" property="userId"/>
+        	<result column="userName" property="name"/>
+        </association>
+	 </resultMap>
+
+
+
+
+
+
+
+
+	<insert id="addNotice" parameterType="noticePo">
+ 		 INSERT INTO 
+    		notice_info 
+    	(  
+    		title,
+    		content,
+    		clickNum,
+    		user_id,
+    		createDate
+    	) VALUES(
+    		#{title},
+    		#{content},
+    		#{clickNum},
+    		#{userId},
+    		NOW()
+    	)
+    </insert>
+	<!-- 修改公告信息 -->
+    <update id="updateNotice" parameterType="noticePo">
+    	UPDATE 
+    		notice_info
+    	SET 
+    		
+    		title=#{title},
+    		content = #{content}
+    	WHERE 
+    		notice_id =#{noticeId}
+    </update>
+    <!--更新clickNum  -->
+    <update id="updateClickNum" parameterType="noticePo">
+	    UPDATE
+	   		 notice_info
+	   	SET 
+	   		clickNum = #{clickNum}
+	    WHERE 
+	    		notice_id =#{noticeId}
+    </update>
+	<!-- 修改state单条 -->
+	<update id="del" parameterType="int">
+    	UPDATE 
+    		notice_info
+    	SET 
+    		isDelete = 1
+    	WHERE 
+    		notice_id =#{noticeId}
+    </update>
+    <!--修改state批量  -->
+    <update id="delAll" parameterType="int">
+        UPDATE 
+    		notice_info
+    	SET 		
+    		isDelete = 1
+    	WHERE 
+    		notice_id in 
+    		<foreach collection="array" item="id" open="(" separator="," close=")" >
+    		    #{id}
+    		</foreach>
+    </update>
+    
+    
+    <select id="findIndexNotices" resultType="com.yz.center.model.vo.message.NoticeVo">
+    	SELECT
+    	 	notice_id noticeId,
+	    	title,
+	    	createDate
+    	FROM
+    		notice_info
+    	WHERE
+    		isDelete = 0
+    	ORDER BY
+    		createDate
+		DESC 
+    	LIMIT 0,7
+    </select>
+    
+</mapper>

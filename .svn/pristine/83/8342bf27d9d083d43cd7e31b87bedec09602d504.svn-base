@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.banner.BannerDao">
+<insert id="addBanner" parameterType="bannerPo" useGeneratedKeys="true" keyProperty="bannerId">
+	INSERT INTO
+		banner_info(
+		banner_id,
+		school_id,
+		title,
+		url,
+		state
+		) VALUES (
+		#{bannerId},
+		#{schoolId},
+		#{title},
+		#{bannerUrl},
+		#{state}
+		)
+	</insert>
+    <update id="delBanner" parameterType="Integer">
+      UPDATE banner_info b 
+      SET b.state=0
+      where b.banner_id=#{bannerId}
+    </update>
+
+	<select id="listBanner" parameterType="pageBean" resultType="bannerPo">
+		SELECT
+			banner_id,
+			school_id,
+			title
+		FROM
+			banner_info
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			school_id = #{schoolId} and state =1
+			<if test="keyWords !=null and keyWords !=''">
+				and title like CONCAT(CONCAT('%',#{keyWords}),'%')
+			</if>
+			</trim>
+		LIMIT #{startIndex},#{pageSize}
+	</select>
+	
+	<select id="getUrlBybannerId" parameterType="int" resultType="bannerPo">
+		SELECT
+			banner_id,
+			title,
+			url bannerUrl
+		FROM
+			banner_info
+		WHERE banner_id = #{bannerId}
+	</select>
+
+	<select id="getBannerCount" parameterType="pageBean" resultType="int">
+		SELECT
+			count(1)
+		FROM
+			banner_info
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+			school_id = #{schoolId} and state =1
+			<if test="keyWords !=null and keyWords !=''">
+				and title like CONCAT(CONCAT('%',#{keyWords}),'%')	
+			</if>
+			</trim>
+		
+	</select>
+	<select id="getIndexBanner" parameterType="int" resultType="bannerPo">
+		SELECT
+			banner_id,
+			title,
+			url bannerUrl
+		FROM
+			banner_info
+		WHERE school_id = #{schoolId} and state = 1
+		order by banner_id desc
+		LIMIT 0,3
+	</select>
+
+
+</mapper>

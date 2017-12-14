@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.video.VideoDao">
+	<select id="findVideoByChapterIds" parameterType="int" resultType="videoPo">
+	SELECT 
+			video_id videoId,
+			name
+	FROM
+			video_info
+	WHERE
+			chapter_id in 
+    		<foreach collection="array" item="id" open="(" separator="," close=")" >
+    		    #{id}
+    		</foreach>
+    </select>
+    
+    <select id="findVideoBySchoolId" parameterType="int" resultType="videoPo">
+    		SELECT 
+    				video_id videoId,
+    				name
+    		
+    		FROM
+    				video_info
+    		WHERE
+    				school_id =#{schoolId}
+    		
+    </select>
+    <select id="getVideoUrlById" parameterType="int" resultType="String">
+    		SELECT 
+    				url
+    		
+    		FROM
+    				video_info
+    		WHERE
+    				video_id =#{videoId}
+    		
+    </select>
+     <select id="getVideoUrlBychapterId" parameterType="int" resultType="String">
+    		SELECT 
+    				url
+    		
+    		FROM
+    				video_info
+    		WHERE
+    				chapter_id =#{chapterId}
+    </select>
+     <select id="getVideoUrlsBychapterId" parameterType="int" resultType="String">
+    	SELECT vf.url FROM course_chapter cp LEFT JOIN video_info vf ON cp.chapter_id=vf.chapter_id WHERE cp.parent_id=#{chapterId} AND cp.state=1 
+    		
+    </select>
+    
+</mapper>

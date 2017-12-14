@@ -1,0 +1,41 @@
+#my notice Page show how many numbers
+commonShowNum = 20
+
+showNum = 10
+
+#\u6d88\u606f\u9644\u4ef6\u5927\u5c0f  1024*1024*5=5M
+uploadNoticeAttachmentSize = 5242880
+allowNoticeAttachmentType = xls,xlsx,txt,doc,docx,rar,zip
+
+#islocal
+localOnly=0
+
+resourcepath =/www/nginx/site
+#uploadPath =http://192.168.0.254:450
+#uploadPath =http://192.168.0.71:83
+uploadPath =http://192.168.0.58:82
+videopath =rtmp://resource.yazhuo365.com/vod/
+#uploadPath=http://192.168.0.199:82
+
+studentRoleId =402880474f439feb014f43b5e28c0001
+teacherRoleId =402880474f439feb014f43b80b860002
+schoolRoleId =4028804e4f44825c014f44d2a7db01ad
+superRoleId=402880474f3951b4014f3953dabf0001
+#cookie
+cookieDomain=.yazhuokj.com
+#ftpEnable
+ftpAvailable=1
+
+#cover of courseType
+courseTypeImgRul=course/type
+typeWidth=280
+typeHeight=200
+
+#file
+upload_file_types=*.jpg;*.gif;*.png;*.doc;*.docx;*.ppt;*.xls;*.xlsx;*.pdf;*.txt;*.zip;*.rar
+#video 
+upload_video_types=*.flv;*.mp4
+#subtitle
+upload_subtitle_types=*.srt;*.vtt
+#pic
+upload_pic_types=*.jpg;*.gif;*.png;*.jpeg;*.bmp

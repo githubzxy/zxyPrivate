@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.task.TaskDao">
+    <!-- 添加教师 -->
+	<insert id="taskAdd" parameterType="taskPo"
+		useGeneratedKeys="true" keyProperty="Id">
+		INSERT INTO
+		examine_task_paper_info
+		(
+		title,
+		useType,
+		openCourseId,
+		schoolId,
+		paperIds,
+		videoId,
+		showTime,
+		createDate
+		)
+		VALUES (
+		#{title},
+		#{useType},
+		#{openCourseId},
+		#{schoolId},
+		#{paperIds},
+		#{videoId},
+		#{showTime},
+		#{createDate}
+		);
+	</insert>
+	<select id="getCourseInfo" resultMap="resultCourseList">
+		select
+		c.course_id,c.course_name,cT.course_type_id,cT.type_name,u.user_id,u.name
+		from course_info c
+		LEFT join course_type cT on
+		cT.course_type_id=c.course_type_id
+		LEFT join user_info u on
+		u.user_id=c.create_user_id
+		where
+		c.state=1
+		LIMIT
+		#{begin},#{pageSize}
+	</select>
+	<select id="getCount" resultMap="resultCourseList">
+		SELECT count(*) FROM course_info
+		c
+		LEFT join course_type cT on cT.course_type_id=c.course_type_id
+		LEFT
+		join user_info u on u.user_id=c.create_user_id
+		WHERE c.state=1
+	</select>
+	<resultMap type="coursePo" id="resultCourseList">
+		<id column="course_id" property="courseId" />
+		<result column="course_name" property="courseName" />
+		<result column="course_type_id" property="courseTypeId" />
+		<result column="create_user_id" property="createUserId" />
+		<association property="courseTypePo" javaType="courseTypePo">
+			<id column="course_type_id" property="courseTypeId" />
+			<result column="type_name" property="typeName" />
+		</association>
+		<association property="createUser" javaType="userPo">
+			<id column="user_id" property="userId" />
+			<result column="name" property="name" />
+		</association>
+	</resultMap>
+
+</mapper>

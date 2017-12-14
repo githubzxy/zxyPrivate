@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.3//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yz.center.dao.school.SchoolDao">
+	<!-- 添加学校 -->
+	<insert id="schoolAdd" parameterType="com.yz.center.model.po.school.SchoolPo"
+		useGeneratedKeys="true" keyProperty="schoolId">
+		INSERT INTO
+		school_info
+		(
+		state,
+		isUsed,
+		school_name,
+		info,
+		contacts,
+		tel,
+		website,
+		url,
+		logo,
+		createDate,
+		startDate,
+		finishDate
+		)
+		VALUES (
+		#{state},
+		#{isUsed},
+		#{schoolName},
+		#{info},
+		#{contacts},
+		#{tel},
+		#{website},
+		#{url},
+		#{logo},
+		#{createDate},
+		#{startDateForm},
+		#{finishDateForm}
+		);
+	</insert>
+	<select id="getSchoolByState" resultMap="resultSchoolList" >
+		select
+		*
+		from school_info s
+		where
+		s.state=1
+	</select>
+	
+	<!-- 根据条件获取学校总数 -->
+	<select id="getCountByCondition" resultType="Integer">
+	select
+	COUNT(1)
+	from school_info s
+	where
+	s.state=1
+	<if test="schoolName != null and schoolName != ''">
+		AND (
+		s.school_name LIKE CONCAT('%',#{schoolName},'%')
+		)
+	</if>
+	</select>
+	
+	<!-- 分页查询学校信息 -->
+	<select id="getSchoolByCondition" parameterType="pageBean" resultType="schoolPo" >
+	select
+	*
+	from school_info s
+	where
+	s.state=1
+	<if test="keyWords != null and keyWords != ''">
+		AND (
+		s.school_name LIKE CONCAT('%',#{keyWords},'%')
+		)
+	</if>
+	LIMIT #{startIndex},#{pageSize}  
+	</select>
+	
+	<!-- 根据学校ID查询学校信息 -->
+	<select id="getSchoolBySchoolId" resultMap="resultSchoolList" >
+		select
+		*
+		from school_info s
+		where
+		s.state=1 AND s.school_id=#{schoolId}
+	</select>
+	
+	<!-- 学校信息修改 -->
+	<update id="schoolUpdate" parameterType="com.yz.center.model.po.school.SchoolPo">
+		UPDATE school_info SET
+		info = #{info},
+		contacts = #{contacts},
+		tel = #{tel},
+		website =#{website},
+		url = #{url},
+		<if test="logo != null and logo != '' " >
+			logo=#{logo},
+		</if>
+		<if test="startDateForm != null and startDateForm != ''">
+			startDate = #{startDateForm},
+		</if>
+		<if test="finishDateForm != null and finishDateForm != ''">
+			finishDate =#{finishDateForm},
+		</if>
+		school_name = #{schoolName}
+		WHERE school_id = #{schoolId}
+	</update>
+	<update id="deleteSchoolById">
+		UPDATE school_info SET
+		state = 0
+		where school_id in
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+		 	#{id}
+		</foreach>
+	</update>
+	<update id="updateSchoolByIdAndIsUsed" parameterType="com.yz.center.model.po.school.SchoolPo">
+		UPDATE school_info SET
+		isUsed =#{isUsed}
+		WHERE school_id = #{schoolId}
+	</update>
+	<resultMap type="schoolPo" id="resultSchoolList">
+		<id column="school_id" property="schoolId" />
+		<result column="isUsed" property="isUsed" />
+		<result column="school_name" property="schoolName" />
+		<result column="info" property="info" />
+		<result column="contacts" property="contacts" />
+		<result column="tel" property="tel" />
+		<result column="website" property="website" />
+		<result column="url" property="url" />
+		<result column="startDate" property="startDate" />
+		<result column="finishDate" property="finishDate" />
+	</resultMap>
+	<!-- 根据域名查询学校信息 -->
+	<select id="selectSchoolByUrl" parameterType="String" resultType="com.yz.center.model.po.school.SchoolPo">
+		select 
+			*
+		from
+			school_info
+		where
+			url = #{url} or extranet = #{url}
+	</select>
+</mapper>
